@@ -1,0 +1,2417 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>גאיהלנד — מרכז פיננסי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --sage:#7a8b6f; --sage-d:#5d6d54; --sage-l:#e8ecE3;
+  --amber:#c89b3c; --amber-l:#f5ead0;
+  --taupe:#a79b8d; --cream:#f7f4ec; --card:#ffffff;
+  --ink:#37352c; --ink-soft:#6f6a5e;
+  --red:#b0533f; --red-l:#f4e2dd; --green-ok:#5d7d52;
+  --r:14px; --shadow:0 1px 3px rgba(55,53,44,.08),0 4px 14px rgba(55,53,44,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Assistant',sans-serif;background:var(--cream);color:var(--ink);font-size:15px}
+h1,h2,h3,.disp{font-family:'Frank Ruhl Libre',serif}
+header{background:var(--sage);color:#fff;padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:1.15rem;font-weight:700;letter-spacing:.2px}
+header .sub{font-size:.72rem;opacity:.85;font-family:'Assistant'}
+#gearBtn{background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:10px;padding:7px 11px;font-size:1rem;cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:14px 12px 20px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+.card h2{font-size:1rem;margin-bottom:10px;color:var(--sage-d)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.kpi{background:var(--sage-l);border-radius:12px;padding:10px 12px}
+.kpi.warn{background:var(--red-l)}
+.kpi.gold{background:var(--amber-l)}
+.kpi .lbl{font-size:.72rem;color:var(--ink-soft)}
+.kpi .val{font-size:1.15rem;font-weight:700;font-family:'Frank Ruhl Libre',serif}
+.kpi .val.neg{color:var(--red)}
+.kpi .val.pos{color:var(--green-ok)}
+button.btn{background:var(--sage);color:#fff;border:none;border-radius:11px;padding:11px 18px;font-size:.95rem;font-family:'Assistant';font-weight:600;cursor:pointer;transition:opacity .15s}
+button.btn:active{opacity:.8}
+button.btn.sec{background:#fff;color:var(--sage-d);border:1.5px solid var(--sage)}
+button.btn.amber{background:var(--amber)}
+button.btn.danger{background:var(--red)}
+button.btn:disabled{opacity:.45;cursor:default}
+input,select,textarea{font-family:'Assistant';font-size:.95rem;padding:9px 10px;border:1.5px solid #ddd6c8;border-radius:10px;background:#fff;color:var(--ink);width:100%}
+input:focus,select:focus{outline:none;border-color:var(--sage)}
+label{font-size:.78rem;color:var(--ink-soft);display:block;margin-bottom:3px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.frow.one{grid-template-columns:1fr}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{text-align:right;color:var(--ink-soft);font-weight:600;padding:5px 6px;border-bottom:2px solid var(--sage-l);white-space:nowrap}
+td{padding:6px;border-bottom:1px solid #efece2;vertical-align:middle}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:.7rem;padding:2px 8px;border-radius:99px;background:var(--sage-l);color:var(--sage-d)}
+.tag.y{background:var(--amber-l);color:#8a6a1e}
+.tag.dup{background:var(--red-l);color:var(--red)}
+nav{position:sticky;top:0;background:#fff;border-bottom:1px solid #e6e1d3;display:flex;z-index:30;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav button{flex:1 0 auto;min-width:74px;background:none;border:none;padding:10px 6px 8px;font-family:'Assistant';font-size:.74rem;color:var(--ink-soft);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;border-bottom:2.5px solid transparent;white-space:nowrap}
+nav button .ic{font-size:1.15rem;line-height:1}
+nav button.on{color:var(--sage-d);font-weight:700;border-bottom-color:var(--sage)}
+.tab{display:none}
+.tab.on{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.spin{display:inline-block;width:16px;height:16px;border:2.5px solid var(--sage-l);border-top-color:var(--sage);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.msg{padding:10px 12px;border-radius:11px;font-size:.85rem;margin:8px 0}
+.msg.ok{background:var(--sage-l);color:var(--sage-d)}
+.msg.err{background:var(--red-l);color:var(--red)}
+.msg.info{background:var(--amber-l);color:#7a5d16}
+.dropzone{border:2px dashed var(--taupe);border-radius:var(--r);padding:26px 14px;text-align:center;color:var(--ink-soft);background:#fbfaf5;cursor:pointer}
+.dropzone.over{border-color:var(--sage);background:var(--sage-l)}
+.sheet{position:fixed;inset:0;background:rgba(40,38,30,.45);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet .panel{background:#fff;width:100%;max-width:760px;border-radius:18px 18px 0 0;padding:18px 16px 26px;max-height:88vh;overflow:auto}
+.bar{height:9px;background:var(--sage-l);border-radius:99px;overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;background:var(--sage);border-radius:99px}
+.bar>i.over{background:var(--red)}
+.rowedit select,.rowedit input{padding:5px 6px;font-size:.78rem;border-radius:7px}
+.small{font-size:.75rem;color:var(--ink-soft)}
+.right{text-align:left}
+.balline{display:flex;align-items:baseline;justify-content:space-between;padding:7px 2px;border-bottom:1px solid #efece2}
+.balline:last-child{border-bottom:none}
+.section-gap{height:4px}
+@media(min-width:700px){body{font-size:15.5px}.kpis{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🌿 גאיהלנד — מרכז פיננסי</h1>
+    <div class="sub">תקציב · תזרים · מע״מ · קליטת בנקים</div>
+  </div>
+  <button id="gearBtn" onclick="openSettings()">⚙️</button>
+</header>
+
+<nav>
+  <button class="on" data-tab="home" onclick="switchTab('home')"><span class="ic">🏠</span>סקירה</button>
+  <button data-tab="insights" onclick="switchTab('insights')"><span class="ic">📊</span>תקציב</button>
+  <button data-tab="breakeven" onclick="switchTab('breakeven')"><span class="ic">⚖️</span>איזון</button>
+  <button data-tab="cash" onclick="switchTab('cash')"><span class="ic">💧</span>תזרים</button>
+  <button data-tab="annual" onclick="switchTab('annual')"><span class="ic">📅</span>שנתי</button>
+  <button data-tab="profit" onclick="switchTab('profit')"><span class="ic">💎</span>ריווחיות</button>
+  <button data-tab="bank" onclick="switchTab('bank')"><span class="ic">📥</span>קליטה</button>
+  <button data-tab="manual" onclick="switchTab('manual')"><span class="ic">✍️</span>הזנה</button>
+  <button data-tab="vat" onclick="switchTab('vat')"><span class="ic">🧾</span>מע״מ</button>
+</nav>
+
+<main>
+
+<!-- ============ סקירה ============ -->
+<div id="tab-home" class="tab on">
+  <div id="homeLoad" class="msg info">טוען נתונים… <span class="spin"></span></div>
+  <div id="homeBody" style="display:none">
+    <div class="card">
+      <h2>💼 עו״ש ותזרים</h2>
+      <div class="kpis" id="cashKpis"></div>
+      <div id="bankBalances" style="margin-top:10px"></div>
+      <div class="small" id="tazrimNote" style="margin-top:6px"></div>
+    </div>
+    <div class="card">
+      <h2>📅 החודש — <span id="homeMonthLbl"></span></h2>
+      <div class="kpis" id="monthKpis"></div>
+    </div>
+    <div class="card">
+      <h2>📈 מגמת הכנסות שנתית</h2>
+      <canvas id="chartAnnual" style="max-height:220px"></canvas>
+    </div>
+    <div class="card">
+      <h2>💧 תחזית תזרים 30 יום</h2>
+      <canvas id="chartCash" style="max-height:200px"></canvas>
+    </div>
+    <div class="card">
+      <h2>🥧 הוצאות לפי קטגוריה (החודש)</h2>
+      <canvas id="chartCategories" style="max-height:260px"></canvas>
+    </div>
+    <div class="card">
+      <h2>🚨 התראות והמלצות</h2>
+      <div id="alertsBox" class="small">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ניהול תזרים ============ -->
+<div id="tab-cash" class="tab">
+  <div class="card">
+    <h2>💧 תחזית עו״ש — 30 יום קדימה</h2>
+    <div id="cfKpis" class="kpis" style="margin-bottom:10px"></div>
+    <div style="overflow-x:auto"><table id="cfTable"></table></div>
+    <div class="small" style="margin-top:6px">יתרה שמרנית = תרחיש של 75% מההכנסות המשוערות. מקור: קובץ התזרים.</div>
+  </div>
+  <div class="card">
+    <h2>➕ תנועה מתוכננת</h2>
+    <div class="frow">
+      <div><label>תאריך</label><input type="date" id="plDate"></div>
+      <div><label>סוג</label><select id="plKind"><option>הוצאה</option><option>הכנסה</option></select></div>
+    </div>
+    <div class="frow one"><div><label>פירוט</label><input id="plDesc" placeholder="למשל: תשלום ספק ציוד"></div></div>
+    <div class="frow">
+      <div><label>סכום ₪</label><input type="number" step="0.01" inputmode="decimal" id="plAmt"></div>
+      <div><label>חשבון</label><select id="plAcc"><option>פועלים</option><option>דיסקונט</option></select></div>
+    </div>
+    <div class="frow">
+      <div><label>סניף</label><select id="plBranch"><option>משותף</option><option>ראשון לציון</option><option>יבנה</option></select></div>
+      <div><label>ודאות</label><select id="plCert"><option>ודאי</option><option>משוער</option></select></div>
+    </div>
+    <button class="btn" id="plBtn" onclick="planAdd()">הוספה לתחזית</button>
+    <div id="plMsg"></div>
+  </div>
+  <div class="card">
+    <h2 style="cursor:pointer" onclick="togglePlanned()">📆 תנועות מתוכננות קרובות <span id="plToggle" class="small">▼</span></h2>
+    <div id="plWrap" style="overflow-x:auto"><table id="plTable"></table></div>
+  </div>
+
+  <div class="card">
+    <h2>🤖 תחזית אוטומטית</h2>
+    <div class="small" style="margin-bottom:8px">המערכת לומדת הוצאות חוזרות מההיסטוריה ומעריכה הכנסות לפי ממוצע יום-בשבוע. אתם מאשרים מה נכנס.</div>
+    <div class="frow">
+      <div><label>טווח</label><select id="fcDays"><option value="30">30 יום</option><option value="60" selected>60 יום</option><option value="90">90 יום</option></select></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn" style="width:100%" onclick="fcSuggest()">🔍 יצירת תחזית</button></div>
+    </div>
+    <div id="fcMsg"></div>
+    <div id="fcBody"></div>
+  </div>
+
+  <div class="card">
+    <h2>🧾 תנועות בפועל שנקלטו</h2>
+    <div class="small" style="margin-bottom:8px">מה שנקלט מדפי הבנק ונרשם בקובץ התזרים. "בתקציב" מציין אם התנועה נספרה גם ביומן ההוצאות.</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <button class="btn sec" onclick="loadCashList()">🔄 טעינה</button>
+      <button class="btn amber" id="c2bBtn" onclick="cashToBudget()">📊 העברת החסרות לתקציב</button>
+    </div>
+    <div id="c2bMsg"></div>
+    <div style="overflow-x:auto"><table id="cashListTable"></table></div>
+  </div>
+</div>
+
+<!-- ============ קליטת בנק ============ -->
+<div id="tab-bank" class="tab">
+  <div class="card">
+    <h2>📥 קליטת דף חשבון / אשראי / מע״מ</h2>
+    <div class="msg info small">הקובץ מזוהה אוטומטית (עו״ש דיסקונט/פועלים, אשראי, או קובץ מע״מ מפייפרלס). אפשר לתקן ידנית למטה.</div>
+    <div class="frow">
+      <div><label>מקור הקובץ</label>
+        <select id="bankSource">
+          <option value="דיסקונט">בנק דיסקונט (→ ראשון לציון)</option>
+          <option value="פועלים">בנק הפועלים (→ יבנה)</option>
+          <option value="אשראי">כרטיס אשראי (כאל / ישראכרט / אמקס)</option>
+        </select>
+      </div>
+      <div><label>סניף ברירת מחדל</label>
+        <select id="bankBranch">
+          <option>ראשון לציון</option><option>יבנה</option>
+        </select>
+      </div>
+    </div>
+    <div class="dropzone" id="dz">
+      <div style="font-size:1.6rem">🏦</div>
+      גררו לכאן קובץ Excel/CSV שהורדתם מאתר הבנק<br>או לחצו לבחירה
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.xlsm" style="display:none">
+    </div>
+    <div id="parseMsg"></div>
+  </div>
+
+  <div class="card" id="previewCard" style="display:none">
+    <h2>בדיקה לפני כתיבה <span class="small" id="prevCount"></span></h2>
+    <div id="instBox"></div>
+    <div class="frow" style="margin-bottom:6px">
+      <div><label>סימון מהיר של סניף</label>
+        <select id="bulkBranch" onchange="bulkSetBranch(this.value)">
+          <option value="">— בחר —</option>
+          <option value="ראשון לציון">הכל → ראשון לציון</option>
+          <option value="יבנה">הכל → יבנה</option>
+          <option value="משותף">הכל → משותף (50/50)</option>
+        </select>
+      </div>
+      <div><label>סימון מהיר של סעיף</label>
+        <select id="bulkCat" onchange="bulkSetCat(this.value)"><option value="">— בחר —</option></select>
+      </div>
+    </div>
+    <div class="frow one" style="margin-bottom:6px">
+      <div><label>סימון מהיר של שיוך תקציבי (ח״ח) — לשכר/מפעילות ששולמו באיחור</label>
+        <select id="bulkShift" onchange="bulkSetShift(this.value)">
+          <option value="">— בחר —</option>
+          <option value="0">הכל → חודש התנועה</option>
+          <option value="-1">הכל → החודש הקודם</option>
+          <option value="1">הכל → החודש הבא</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow-x:auto"><table id="prevTable"></table></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" id="commitBtn" onclick="commitRows()">✍️ כתיבה לתקציב + תזרים</button>
+      <button class="btn sec" onclick="clearPreview()">ביטול</button>
+    </div>
+    <div id="commitMsg"></div>
+  </div>
+</div>
+
+<!-- ============ הזנה ידנית ============ -->
+<div id="tab-manual" class="tab">
+  <div class="card">
+    <h2>✍️ הזנת הוצאה ידנית</h2>
+    <div class="frow">
+      <div><label>תאריך</label><input type="date" id="mDate"></div>
+      <div><label>סכום (כולל מע״מ)</label><input type="number" step="0.01" inputmode="decimal" id="mAmt" placeholder="0.00"></div>
+    </div>
+    <div class="frow one">
+      <div><label>ספק / תיאור</label><input id="mDesc" placeholder="למשל: סקול מרקט" list="supList"><datalist id="supList"></datalist></div>
+    </div>
+    <div class="frow">
+      <div><label>סניף</label><select id="mBranch"><option>ראשון לציון</option><option>יבנה</option></select></div>
+      <div><label>סעיף תקציב</label><select id="mCat"></select></div>
+    </div>
+    <div class="frow">
+      <div><label>כולל מע״מ?</label><select id="mVat"><option>אוטו</option><option>כן</option><option>לא</option><option>מעורב</option></select></div>
+      <div><label>סטטוס</label><select id="mPaid"><option>✅ שולם</option><option>⏳ ממתין</option></select></div>
+    </div>
+    <div class="frow one"><div><label>הערות (רשות)</label><input id="mNote"></div></div>
+    <button class="btn" id="mAddBtn" onclick="manualAdd()">הוספה ליומן</button>
+    <div id="mMsg"></div>
+  </div>
+  <div class="card">
+    <h2>🕘 תנועות אחרונות ביומן</h2>
+    <div style="overflow-x:auto"><table id="recentTable"></table></div>
+  </div>
+</div>
+
+<!-- ============ מע"מ ============ -->
+<div id="tab-vat" class="tab">
+  <div class="card">
+    <h2>🧾 השוואת מע״מ — תקופה דו-חודשית</h2>
+    <div class="frow">
+      <div><label>תקופה</label><select id="vatPeriod"></select></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn" style="width:100%" onclick="loadVat()">חישוב</button></div>
+    </div>
+    <div id="vatBody"></div>
+  </div>
+  <div class="card">
+    <h2>📎 השוואת מסמכים — כמו בכלי ההתאמות</h2>
+    <div class="small" style="margin-bottom:8px">העלו קובץ מע״מ מפייפרלס + דפי אשראי/עו״ש של אותה תקופה. המערכת תמצא חיובים בלי חשבונית, חשבוניות בלי מע״מ, ותחשב מע״מ תשומות אמיתי מהמסמכים.</div>
+    <div class="dropzone" id="vatDz">
+      <div style="font-size:1.5rem">🧾</div>
+      גררו לכאן את הקבצים (אפשר כמה ביחד)
+      <input type="file" id="vatFileInput" accept=".xlsx,.xls,.csv,.xlsm" multiple style="display:none">
+    </div>
+    <div id="vatFiles" style="margin-top:8px"></div>
+    <div id="vatReconBody"></div>
+  </div>
+</div>
+
+<!-- ============ המלצות ============ -->
+<div id="tab-insights" class="tab">
+  <div class="card">
+    <h2>📊 תקציב מול ביצוע — <span id="insMonthLbl"></span></h2>
+    <div class="frow">
+      <div><label>חודש</label><input type="month" id="insMonth" onchange="loadInsights()"></div>
+      <div><label>סניף</label><select id="insBranch" onchange="renderBudget()">
+        <option value="combined">מאוחד</option>
+        <option value="rishon">ראשון לציון</option>
+        <option value="yavne">יבנה</option>
+      </select></div>
+    </div>
+    <button class="btn sec" style="margin-bottom:10px" onclick="bgCache=null;loadInsights()">🔄 רענון נתונים</button>
+    <div id="insBody"></div>
+    <div style="margin-top:8px"><label style="display:inline"><input type="checkbox" id="bgEditMode" onchange="renderBudget()" style="width:auto;vertical-align:-2px"> ערוך תקציב (לחיצה על תא תקציב לשינוי)</label></div>
+  </div>
+</div>
+
+<!-- ============ תחזית שנתית ============ -->
+<!-- ============ נקודת איזון ============ -->
+<div id="tab-breakeven" class="tab">
+  <div class="card">
+    <h2>⚖️ נקודת איזון — <span id="beMonthLbl"></span></h2>
+    <div class="frow">
+      <div><label>חודש</label><input type="month" id="beMonth" onchange="loadBreakeven()"></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn sec" style="width:100%" onclick="loadBreakeven()">🔄 רענון</button></div>
+    </div>
+    <div id="beBody"></div>
+  </div>
+
+  <div class="card">
+    <h2>🏷️ סיווג הוצאות — קבועות מול משתנות</h2>
+    <div class="small" style="margin-bottom:8px">הסיווג נקבע אוטומטית לפי סוג ההוצאה. לחצו על התגית כדי לשנות — השינוי נשמר ומשפיע על החישוב.</div>
+    <div style="overflow-x:auto"><table id="beItems"></table></div>
+  </div>
+</div>
+
+<div id="tab-annual" class="tab">
+  <div class="card">
+    <h2>📅 דשבורד שנתי 2026 — יעדים מול ביצוע</h2>
+    <div id="annualKpis" class="kpis" style="margin-bottom:10px"></div>
+    <div style="overflow-x:auto"><table id="annualTable"></table></div>
+    <div class="small" style="margin-top:6px">לחיצה על יעד חודשי מאפשרת עריכה. שאר הנתונים מחושבים מהקבצים.</div>
+  </div>
+</div>
+
+<!-- ============ ריווחיות ============ -->
+<div id="tab-profit" class="tab">
+  <div class="card">
+    <h2>💎 ריווחיות מוצרים ופעילויות</h2>
+    <div id="profitKpis" class="kpis" style="margin-bottom:10px"></div>
+    <canvas id="chartProfit" style="max-height:220px;margin-bottom:10px"></canvas>
+    <div style="overflow-x:auto"><table id="profitTable"></table></div>
+    <div class="small" id="profitNote" style="margin-top:6px"></div>
+  </div>
+
+  <div class="card">
+    <h2>🧮 מחשבון תמחור — מוצר חדש</h2>
+    <div class="small" style="margin-bottom:8px">הזינו עלות ומחיר — המחשבון יראה רווח, אחוז ותמחור מומלץ לפי יעד רווחיות.</div>
+    <div class="frow one"><div><label>שם המוצר / פעילות</label><input id="pfName" placeholder="למשל: מארז יום הולדת פרימיום"></div></div>
+    <div class="frow">
+      <div><label>עלות ספק (אחרי מע״מ) ₪</label><input type="number" step="0.01" inputmode="decimal" id="pfCost" oninput="pfCalc()"></div>
+      <div><label>מחיר מכירה (לפני מע״מ) ₪</label><input type="number" step="0.01" inputmode="decimal" id="pfSell" oninput="pfCalc()"></div>
+    </div>
+    <div class="frow">
+      <div><label>כמות חודשית משוערת</label><input type="number" step="1" inputmode="numeric" id="pfQty" value="0" oninput="pfCalc()"></div>
+      <div><label>יעד רווחיות %</label><input type="number" step="1" inputmode="numeric" id="pfTarget" value="60" oninput="pfCalc()"></div>
+    </div>
+    <div id="pfCalcBox"></div>
+    <button class="btn" id="pfAddBtn" onclick="profitAdd()" style="margin-top:8px">➕ הוספה לגיליון הריווחיות</button>
+    <div id="pfMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔄 "מה אם" — שינוי מוצר קיים</h2>
+    <div class="small" style="margin-bottom:8px">בחרו מוצר קיים, שנו מחיר/עלות/כמות, וראו את ההשפעה. אפשר לשמור חזרה לקובץ.</div>
+    <div class="frow one"><div><label>מוצר</label><select id="waItem" onchange="waLoad()"></select></div></div>
+    <div class="frow">
+      <div><label>מחיר מכירה ₪</label><input type="number" step="0.01" inputmode="decimal" id="waSell" oninput="waCalc()"></div>
+      <div><label>עלות ₪</label><input type="number" step="0.01" inputmode="decimal" id="waCost" oninput="waCalc()"></div>
+    </div>
+    <div class="frow one"><div><label>כמות חודשית</label><input type="number" step="1" inputmode="numeric" id="waQty" oninput="waCalc()"></div></div>
+    <div id="waResult"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn" id="waSaveBtn" onclick="waSave()">💾 שמירה לקובץ</button>
+      <button class="btn sec danger" onclick="waDelete()">🗑 מחיקת המוצר</button>
+    </div>
+    <div id="waMsg"></div>
+  </div>
+</div>
+
+</main>
+
+<!-- הגדרות -->
+<div class="sheet" id="settingsSheet">
+  <div class="panel">
+    <h2 class="disp" style="margin-bottom:10px">⚙️ הגדרות</h2>
+    <label>כתובת ה-API (Apps Script Web App /exec)</label>
+    <input id="apiUrlInput" placeholder="https://script.google.com/macros/s/…/exec">
+    <div class="small" style="margin:8px 0">הפריסה חייבת להיות עם גישת "Anyone". אחרי שינוי קוד בסקריפט — פריסה חדשה (New deployment).</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" onclick="saveSettings()">שמירה</button>
+      <button class="btn sec" onclick="document.getElementById('settingsSheet').classList.remove('on')">סגירה</button>
+    </div>
+    <hr style="border:none;border-top:1px solid #eee6d6;margin:16px 0">
+    <h3 class="disp" style="font-size:.95rem;margin-bottom:6px">🔄 טאב תנועות בפועל</h3>
+    <div class="small" style="margin-bottom:8px">יצירת טאב "תנועות בפועל" בקובץ התזרים לרישום תנועות עו״ש. פעם אחת בלבד.</div>
+    <button class="btn amber" id="setupBtn" onclick="runSetup()">יצירת טאב תנועות בפועל</button>
+    <div id="setupMsg"></div>
+    <hr style="border:none;border-top:1px solid #eee6d6;margin:16px 0">
+    <h3 class="disp" style="font-size:.95rem;margin-bottom:6px">⚓ עוגני יתרה (יתרה ידועה מדף החשבון)</h3>
+    <div class="small" style="margin-bottom:8px">הזינו יתרה + תאריך מתוך אתר הבנק — מכאן המערכת מחשבת יתרה בפועל לפי התנועות שנקלטות.</div>
+    <div class="frow" style="grid-template-columns:auto 1fr 1fr auto;align-items:end">
+      <div style="font-weight:700;padding-bottom:9px">פועלים</div>
+      <div><label>תאריך</label><input type="date" id="ancPoDate"></div>
+      <div><label>יתרה ₪</label><input type="number" step="0.01" inputmode="decimal" id="ancPoBal"></div>
+      <button class="btn sec" style="padding:9px 12px" onclick="saveAnchor('פועלים','Po')">✓</button>
+    </div>
+    <div class="frow" style="grid-template-columns:auto 1fr 1fr auto;align-items:end">
+      <div style="font-weight:700;padding-bottom:9px">דיסקונט</div>
+      <div><label>תאריך</label><input type="date" id="ancDiDate"></div>
+      <div><label>יתרה ₪</label><input type="number" step="0.01" inputmode="decimal" id="ancDiBal"></div>
+      <button class="btn sec" style="padding:9px 12px" onclick="saveAnchor('דיסקונט','Di')">✓</button>
+    </div>
+    <div id="ancMsg"></div>
+    <hr style="border:none;border-top:1px solid #eee6d6;margin:16px 0">
+    <h3 class="disp" style="font-size:.95rem;margin-bottom:6px">📅 לוח קבלת הכנסות</h3>
+    <div class="small" style="margin-bottom:8px">מתי הכסף באמת נכנס לחשבון — כדי שהתחזית תרכז את ההכנסות בימים הנכונים במקום לפזר אותן על כל יום.</div>
+    <div class="frow">
+      <div><label>יום סליקה שבועי</label><select id="schWeekly">
+        <option value="0">ראשון</option><option value="1">שני</option><option value="2">שלישי</option>
+        <option value="3">רביעי</option><option value="4">חמישי</option><option value="5">שישי</option><option value="6">שבת</option>
+      </select></div>
+      <div><label>ימי הכנסות מהאתר</label><input id="schSiteDays" placeholder="2,8"></div>
+    </div>
+    <div class="frow">
+      <div><label>אחוז מהאתר %</label><input type="number" step="1" inputmode="numeric" id="schSitePct" placeholder="0"></div>
+      <div><label>או סכום חודשי קבוע ₪</label><input type="number" step="1" inputmode="numeric" id="schSiteAmount" placeholder="0"></div>
+    </div>
+    <button class="btn" onclick="saveSchedule()">שמירת לוח ההכנסות</button>
+    <div id="schMsg"></div>
+
+    <hr style="border:none;border-top:1px solid #eee6d6;margin:16px 0">
+    <h3 class="disp" style="font-size:.95rem;margin-bottom:6px">🩺 אבחון</h3>
+    <div class="small" style="margin-bottom:8px">בודק מה המערכת רואה ביומן ההוצאות — שימושי אם התקציב נראה ריק.</div>
+    <button class="btn sec" onclick="runDiag()">הרצת אבחון</button>
+    <div id="diagMsg"></div>
+    <hr style="border:none;border-top:1px solid #eee6d6;margin:16px 0">
+    <h3 class="disp" style="font-size:.95rem;margin-bottom:6px">🔧 תיקון סכומים פגומים</h3>
+    <div class="small" style="margin-bottom:8px">מתקן שורות ביומן שבהן הסכום נדרס בטעות (מופיע "אוטו" במקום מספר). הסכומים משוחזרים מטאב "תנועות בפועל".</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn sec" onclick="runRepair(true)">🔍 סריקה בלבד</button>
+      <button class="btn amber" onclick="runRepair(false)">🔧 תיקון</button>
+    </div>
+    <div id="repairMsg"></div>
+    <hr style="border:none;border-top:1px solid #eee6d6;margin:16px 0">
+    <h3 class="disp" style="font-size:.95rem;margin-bottom:6px">↩️ ביטול קליטת בנק</h3>
+    <div class="small" style="margin-bottom:8px">מוחק מיומן ההוצאות את השורות שמקורן בקליטת דפי בנק (מזוהות מול "תנועות בפועל"). שימושי אם נוצרה ספירה כפולה מול הזנות ידניות.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn sec" onclick="runUndo(true)">🔍 סריקה בלבד</button>
+      <button class="btn danger" onclick="runUndo(false)">↩️ ביטול הקליטה</button>
+    </div>
+    <div id="undoMsg"></div>
+    <div id="setMsg"></div>
+  </div>
+</div>
+
+<script>
+/* ================= בסיס ================= */
+var API_KEY='gyl_finance_api_url';
+// שמירה עמידה לנייד: cookie (שנה) + localStorage + hash ב-URL כגיבוי אחרון.
+// בנייד localStorage לפעמים נמחק (מצב פרטי/ניקוי) — cookie שורד טוב יותר.
+function setCookie(v){ try{ document.cookie=API_KEY+'='+encodeURIComponent(v)+';path=/;max-age=31536000;SameSite=Lax'; }catch(e){} }
+function getCookie(){ try{ var m=document.cookie.match(new RegExp('(?:^|; )'+API_KEY+'=([^;]*)')); return m?decodeURIComponent(m[1]):''; }catch(e){ return ''; } }
+function apiUrl(){
+  var h=location.hash.match(/api=([^&]+)/);
+  if(h){ var u=decodeURIComponent(h[1]); persistUrl(u); return u; }
+  var c=getCookie(); if(c) return c;
+  try{ return localStorage.getItem(API_KEY)||''; }catch(e){ return ''; }
+}
+function persistUrl(v){
+  try{ localStorage.setItem(API_KEY,v); }catch(e){}
+  setCookie(v);
+}
+function fmt(n){ n=Math.round(Number(n)||0); return n.toLocaleString('he-IL')+'₪'; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function todayISO(){ var d=new Date(); return d.toISOString().slice(0,10); }
+function curMonth(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
+function ddmmyyyy(iso){ var p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function heMonth(m){ var names=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']; var p=m.split('-'); return names[+p[1]-1]+' '+p[0]; }
+
+function api(params){
+  var u=apiUrl();
+  if(!u) return Promise.reject(new Error('לא הוגדרה כתובת API — פתחו ⚙️ הגדרות'));
+  var qs=new URLSearchParams(params).toString();
+  return fetch(u+'?'+qs).then(function(r){ return r.json(); }).then(function(j){
+    if(j && j.ok===false) throw new Error(j.error||'שגיאת שרת');
+    return j;
+  });
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(function(el){ el.classList.remove('on'); });
+  document.getElementById('tab-'+t).classList.add('on');
+  document.querySelectorAll('nav button').forEach(function(b){ b.classList.toggle('on', b.dataset.tab===t); });
+  if(t==='vat' && !vatLoaded){ loadVat(); vatLoaded=true; }
+  if(t==='cash' && !cashLoaded){ loadCashTab(); cashLoaded=true; }
+  if(t==='annual' && !annualLoaded){ loadAnnual(); annualLoaded=true; }
+  if(t==='breakeven' && !beLoaded){ loadBreakeven(); beLoaded=true; }
+  if(t==='profit' && !profitLoaded){ loadProfit(); profitLoaded=true; }
+  if(t==='insights' && !insLoaded){ loadInsights(); insLoaded=true; }
+  if(t==='manual' && !recentLoaded){ loadRecent(); recentLoaded=true; }
+}
+var vatLoaded=false, insLoaded=false, recentLoaded=false, cashLoaded=false, annualLoaded=false, profitLoaded=false, beLoaded=false;
+
+function openSettings(){
+  document.getElementById('apiUrlInput').value=apiUrl();
+  document.getElementById('settingsSheet').classList.add('on');
+  loadSchedule();
+}
+function saveSettings(){
+  var v=document.getElementById('apiUrlInput').value.trim();
+  persistUrl(v);
+  var link=location.origin+location.pathname+'#api='+encodeURIComponent(v);
+  document.getElementById('setMsg').innerHTML='<div class="msg ok">נשמר ✓ טוען מחדש…</div>'+
+    '<div class="msg info small">📌 לנייד: הוסיפו למסך הבית מהקישור הזה כדי שהחיבור יישמר תמיד:<br><span style="word-break:break-all">'+esc(link)+'</span></div>';
+  setTimeout(function(){ location.reload(); },1200);
+}
+function loadSchedule(){
+  api({action:'settings_get'}).then(function(r){
+    var s=(r.settings&&r.settings.income)||{};
+    var w=document.getElementById('schWeekly'); if(w) w.value=String(s.weeklyDay!==undefined?s.weeklyDay:4);
+    var sd=document.getElementById('schSiteDays'); if(sd) sd.value=(s.siteDays||[2,8]).join(',');
+    var sp=document.getElementById('schSitePct'); if(sp) sp.value=s.sitePct||'';
+    var sa=document.getElementById('schSiteAmount'); if(sa) sa.value=s.siteAmount||'';
+  }).catch(function(){});
+}
+function saveSchedule(){
+  var m=document.getElementById('schMsg');
+  var days=document.getElementById('schSiteDays').value.split(',')
+    .map(function(x){return parseInt(x.trim(),10);}).filter(function(x){return x>=1&&x<=28;});
+  var inc={
+    weeklyDay: parseInt(document.getElementById('schWeekly').value,10),
+    siteDays: days,
+    sitePct: parseFloat(document.getElementById('schSitePct').value)||0,
+    siteAmount: parseFloat(document.getElementById('schSiteAmount').value)||0
+  };
+  m.innerHTML='<div class="msg info">שומר… <span class="spin"></span></div>';
+  api({action:'settings_set', income:JSON.stringify(inc)}).then(function(){
+    m.innerHTML='<div class="msg ok">✅ נשמר. הריצו מחדש "יצירת תחזית" בטאב תזרים.</div>';
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+function runUndo(scanOnly){
+  var m=document.getElementById('undoMsg');
+  if(!scanOnly && !confirm('למחוק מיומן ההוצאות את כל השורות שמקורן בקליטת בנק?\nההזנות הידניות שלכם לא ייפגעו.')) return;
+  m.innerHTML='<div class="msg info">'+(scanOnly?'סורק':'מוחק')+'… <span class="spin"></span></div>';
+  var params={action:'undo_import'};
+  if(scanOnly) params.scan='1';
+  api(params).then(function(r){
+    if(!r.found){ m.innerHTML='<div class="msg ok">✅ לא נמצאו שורות מקליטת בנק</div>'; return; }
+    if(scanOnly){
+      var h='<div class="msg info"><b>נמצאו '+r.found+' שורות שמקורן בקליטת בנק.</b><br>דוגמאות:</div>'+
+        '<table style="font-size:.72rem"><tr><th>תאריך</th><th>ספק</th><th>סכום</th></tr>';
+      (r.sample||[]).forEach(function(x){ h+='<tr><td>'+esc(x.date)+'</td><td>'+esc(x.desc)+'</td><td>'+esc(x.amount)+'</td></tr>'; });
+      h+='</table><div class="small" style="margin-top:6px">לחצו "↩️ ביטול הקליטה" כדי להסיר אותן.</div>';
+      m.innerHTML=h;
+      return;
+    }
+    m.innerHTML='<div class="msg ok">↩️ הוסרו '+r.removed+' שורות. היומן חזר למצב שלפני הקליטה.</div>';
+    insLoaded=false; bgCache=null;
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+function runRepair(scanOnly){
+  var m=document.getElementById('repairMsg');
+  m.innerHTML='<div class="msg info">'+(scanOnly?'סורק':'מתקן')+'… <span class="spin"></span></div>';
+  var params={action:'repair'};
+  if(scanOnly) params.scan='1';
+  api(params).then(function(r){
+    if(!r.damaged){ m.innerHTML='<div class="msg ok">✅ לא נמצאו שורות פגומות</div>'; return; }
+    if(scanOnly){
+      var h='<div class="msg info"><b>נמצאו '+r.damaged+' שורות עם סכום פגום.</b><br>דוגמאות:</div><table style="font-size:.72rem"><tr><th>תאריך</th><th>ספק</th><th>ערך שגוי</th></tr>';
+      (r.sample||[]).forEach(function(x){ h+='<tr><td>'+esc(x.date)+'</td><td>'+esc(x.desc)+'</td><td style="color:var(--red)">'+esc(x.raw)+'</td></tr>'; });
+      h+='</table><div class="small" style="margin-top:6px">לחצו "🔧 תיקון" כדי לשחזר את הסכומים.</div>';
+      m.innerHTML=h;
+      return;
+    }
+    var h2='<div class="msg ok">✅ תוקנו '+r.fixed+' מתוך '+r.damaged+' שורות</div>';
+    if(r.unresolved){
+      h2+='<div class="msg info small">⚠️ '+r.unresolved+' שורות לא ניתן היה לשחזר (אין להן התאמה ב"תנועות בפועל" — כנראה מקובץ אשראי).<br>אפשר למחוק אותן ולקלוט מחדש את הקובץ המקורי:</div>'+
+        '<button class="btn danger" style="margin-top:6px" onclick="repairDelete()">🗑 מחיקת '+r.unresolved+' השורות שלא שוחזרו</button>';
+    }
+    m.innerHTML=h2;
+    insLoaded=false;
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+function repairDelete(){
+  if(!confirm('למחוק את השורות שלא ניתן היה לשחזר? אחר כך תוכלו לקלוט מחדש את קובץ המקור.')) return;
+  var m=document.getElementById('repairMsg');
+  m.innerHTML='<div class="msg info">מוחק… <span class="spin"></span></div>';
+  api({action:'repair', deleteUnresolved:'true'}).then(function(r){
+    m.innerHTML='<div class="msg ok">🗑 הוסרו '+r.removed+' שורות. אפשר לקלוט מחדש את הקובץ בטאב 📥 קליטה.</div>';
+    insLoaded=false;
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+function runDiag(){
+  var m=document.getElementById('diagMsg');
+  m.innerHTML='<div class="msg info">בודק… <span class="spin"></span></div>';
+  api({action:'diag', month:(document.getElementById('insMonth')||{}).value||curMonth()}).then(function(d){
+    var h='<div class="msg '+(d.rowsInMonth?'ok':'err')+' small">';
+    h+='<b>גיליון:</b> '+esc(d.journalSheet||'?')+' · שורות סה״כ: '+(d.totalRows||0)+'<br>';
+    h+='<b>חודש נבדק:</b> '+esc(d.month)+' → נמצאו <b>'+(d.rowsInMonth||0)+'</b> תנועות';
+    if(d.uncategorizedInMonth) h+=' (מתוכן '+d.uncategorizedInMonth+' ללא סעיף)';
+    h+='<br><b>עמודות:</b> תאריך='+d.cols.date+' סכום='+d.cols.amount+' סעיף='+d.cols.category+' ח״ח='+d.cols.chargeMonth;
+    if(d.cols.chargeMonth===-1) h+=' <span style="color:var(--red)">(אין עמודת ח״ח — נגזר מהתאריך)</span>';
+    if(d.chargeMonthIsFormula) h+='<br><span style="color:var(--amber)">⚠️ עמודת ח״ח היא נוסחה — שיוך לחודש אחר נשמר במפת שיוכים נפרדת</span>';
+    if(d.monthFormats){
+      var mf='';
+      Object.keys(d.monthFormats).forEach(function(k){
+        var x=d.monthFormats[k];
+        mf+='<div><b>'+esc(k)+'</b> (עמודה '+x.column+'): קיים '+esc((x.samples||[]).join(', ')||'ריק')+
+          ' → ייכתב <b style="color:var(--sage-d)">'+esc(x.willWrite)+'</b></div>';
+      });
+      if(mf) h+='<div class="msg info small" style="margin-top:6px"><b>פורמט עמודות החודש:</b>'+mf+'</div>';
+    }
+    h+='</div>';
+    if(d.monthsFound){
+      var ms=Object.keys(d.monthsFound).sort().slice(-6);
+      h+='<div class="small">חודשים ביומן: '+ms.map(function(k){return k+' ('+d.monthsFound[k]+')';}).join(' · ')+'</div>';
+    }
+    if(d.lastRows&&d.lastRows.length){
+      h+='<div class="small" style="margin-top:6px"><b>5 שורות אחרונות:</b></div><table style="font-size:.72rem"><tr><th>תאריך</th><th>ספק</th><th>סכום</th><th>סעיף</th><th>חודש</th></tr>';
+      d.lastRows.forEach(function(r){
+        h+='<tr><td>'+esc(r.date)+'</td><td>'+esc(r.desc)+'</td><td>'+esc(r.amount)+'</td><td>'+(r.category?esc(r.category):'<span style="color:var(--red)">ריק</span>')+'</td><td>'+esc(r.resolvedMonth)+'</td></tr>';
+      });
+      h+='</table>';
+    }
+    if(d.journalError) h+='<div class="msg err">'+esc(d.journalError)+'</div>';
+    if(d.budgetSheets) h+='<div class="small" style="margin-top:8px"><b>גיליונות בקובץ התקציב:</b><br>'+esc(d.budgetSheets.join(' · '))+'</div>';
+    if(d.tazrimSheets) h+='<div class="small" style="margin-top:4px"><b>גיליונות בקובץ התזרים:</b><br>'+esc(d.tazrimSheets.join(' · '))+'</div>';
+    if(d.budgetFileError) h+='<div class="msg err small">קובץ תקציב: '+esc(d.budgetFileError)+'</div>';
+    if(d.tazrimFileError) h+='<div class="msg err small">קובץ תזרים: '+esc(d.tazrimFileError)+'</div>';
+    m.innerHTML=h;
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+function runSetup(){
+  var m=document.getElementById('setupMsg');
+  var b=document.getElementById('setupBtn'); b.disabled=true;
+  m.innerHTML='<div class="msg info">יוצר טאב… <span class="spin"></span></div>';
+  api({action:'setup'}).then(function(r){
+    b.disabled=false;
+    m.innerHTML='<div class="msg ok">'+esc(r.note||'✅ מוכן')+' <a href="'+esc(r.url)+'" target="_blank">פתיחת הקובץ</a></div>';
+  }).catch(function(e){ b.disabled=false; m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+function saveAnchor(account,pref){
+  var d=document.getElementById('anc'+pref+'Date').value;
+  var bal=document.getElementById('anc'+pref+'Bal').value;
+  var m=document.getElementById('ancMsg');
+  if(!d||bal===''){ m.innerHTML='<div class="msg err">חסר תאריך או יתרה</div>'; return; }
+  api({action:'set_anchor',account:account,date:ddmmyyyy(d),balance:bal}).then(function(){
+    m.innerHTML='<div class="msg ok">✅ עוגן '+account+' נשמר</div>';
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+/* ================= מטא (קטגוריות + ספקים) ================= */
+var META={categories:[],suppliers:{},branches:['ראשון לציון','יבנה']};
+function loadMeta(){
+  return api({action:'meta'}).then(function(m){
+    META=m;
+    var cat=document.getElementById('mCat'); cat.innerHTML='';
+    (m.categories||[]).forEach(function(c){ var o=document.createElement('option'); o.textContent=c; cat.appendChild(o); });
+    var dl=document.getElementById('supList'); dl.innerHTML='';
+    Object.keys(m.suppliers||{}).forEach(function(s){ var o=document.createElement('option'); o.value=s; dl.appendChild(o); });
+    var bc=document.getElementById('bulkCat');
+    if(bc){ bc.innerHTML='<option value="">— בחר —</option>'+(m.categories||[]).map(function(c){return '<option>'+esc(c)+'</option>';}).join(''); }
+  });
+}
+
+/* ================= סקירה ================= */
+function loadHome(){
+  var lp=document.getElementById('homeLoad');
+  api({action:'home', month:curMonth()}).then(function(H){
+    var ins={revenue:(H.budget&&H.budget.revenue)||{gross:0,net:0}, alerts:[], tips:[], totals:{budget:0,actual:0}};
+    if(H.budget && H.budget.budget){
+      var tb=0,ta=0;
+      Object.keys(H.budget.budget).forEach(function(k){
+        var it=H.budget.budget[k];
+        var bud=it.budgetR+it.budgetY, act=it.actualR+it.actualY;
+        tb+=bud; ta+=act;
+        if(bud>0 && act>bud*1.1) ins.alerts.push({type:'over',category:k,budget:bud,actual:act,pct:Math.round(act/bud*100)});
+      });
+      ins.totals={budget:Math.round(tb),actual:Math.round(ta)};
+      if(H.budget.unmapped>500) ins.alerts.push({type:'unmapped',amount:Math.round(H.budget.unmapped)});
+    }
+    if(H.budgetErr) ins.err=H.budgetErr;
+    var tz = H.tazrimErr? {err:H.tazrimErr} : (H.tazrim||{});
+    var cs = H.cashErr? {err:H.cashErr} : (H.cash||{});
+    if(tz && tz.daily && tz.daily.length){
+      var minB=null,minD='';
+      tz.daily.forEach(function(d){ if(minB===null||d.balCons<minB){minB=d.balCons;minD=d.date;} });
+      if(minB!==null && minB<0) ins.alerts.push({type:'cash_low',date:minD,balance:Math.round(minB)});
+    }
+    renderHome(ins, tz, cs, H);
+  }).catch(function(e){
+    lp.innerHTML='<div class="msg err">'+esc(e.message)+'</div>';
+  });
+}
+function renderHome(ins, tz, cs, H){
+    var lp=document.getElementById('homeLoad');
+    lp.style.display='none';
+    document.getElementById('homeBody').style.display='block';
+    document.getElementById('homeMonthLbl').textContent=heMonth(curMonth());
+
+    // תזרים
+    var ck=document.getElementById('cashKpis'), bb=document.getElementById('bankBalances');
+    if(tz.err){
+      var isSetup=tz.err.indexOf('תנועות בפועל')!==-1 || tz.err.indexOf('setup')!==-1;
+      ck.innerHTML='<div class="kpi warn" style="grid-column:1/-1"><div class="lbl">תזרים</div><div class="val" style="font-size:.85rem">'+esc(tz.err)+'</div>'+
+        (isSetup?'<button class="btn amber" style="margin-top:8px" onclick="openSettings()">⚙️ הגדרות</button>':'')+'</div>';
+    } else {
+      var d0=tz.daily && tz.daily[0];
+      var minBal=null,minDate='';
+      (tz.daily||[]).forEach(function(d){ if(minBal===null||d.balCons<minBal){minBal=d.balCons;minDate=d.date;} });
+
+      // בפועל מול תחזית
+      function accKpi(name,acc,fc){
+        if(acc && acc.balance!==null && acc.balance!==undefined){
+          var diff=acc.vsForecast;
+          return kpi(name+' — בפועל', acc.balance, acc.balance<0?'neg':'pos','')+
+            (diff!==undefined? '<div class="kpi '+(Math.abs(diff)>3000?'warn':'')+'"><div class="lbl">'+name+' · פער מתחזית</div><div class="val '+(diff<0?'neg':'pos')+'" style="font-size:1rem">'+(diff>0?'+':'')+fmt(diff)+'</div></div>' : '');
+        }
+        return kpi(name+' (תחזית)', fc, fc<0?'neg':'pos','');
+      }
+      // יתרה אמיתית משולבת = פועלים + דיסקונט (לא כולל מסגרת אשראי)
+      var realTotal = d0? (d0.poalim + d0.discount) : 0;
+      var margin = d0? d0.margin : 0; // כמה נשאר מהמסגרת (זמין למשיכה)
+      ck.innerHTML=
+        kpi('יתרה משולבת בבנק · תחזית היום', realTotal, realTotal<0?'neg':'pos', realTotal<0?'warn':'')+
+        accKpi('פועלים', cs&&cs.accounts&&cs.accounts['פועלים'], d0?d0.poalim:0)+
+        accKpi('דיסקונט', cs&&cs.accounts&&cs.accounts['דיסקונט'], d0?d0.discount:0)+
+        kpi('שפל צפוי · '+esc(minDate||'—'), minBal||0, (minBal||0)<0?'neg':'pos', (minBal||0)<0?'warn':'')+
+        '<div class="kpi gold"><div class="lbl">💳 זמין מהמסגרת (עד −60K)</div><div class="val" style="font-size:1rem">'+fmt(margin)+'</div></div>';
+      if(cs && cs.accounts && !cs.accounts['פועלים'].hasAnchor && !cs.accounts['דיסקונט'].hasAnchor){
+        ck.innerHTML+='<div class="kpi gold" style="grid-column:1/-1"><div class="small">💡 להשוואת "בפועל מול תחזית" — הזינו עוגן יתרה מדף החשבון ב-⚙️ הגדרות</div></div>';
+      }
+      var lines='';
+      (tz.daily||[]).slice(0,7).forEach(function(d){
+        lines+='<div class="balline"><span class="small">'+esc(d.date)+'</span><span class="num '+(d.bal<0?'':'')+'" style="font-weight:700;color:'+(d.bal<0?'var(--red)':'var(--green-ok)')+'">'+fmt(d.bal)+'</span></div>';
+      });
+      bb.innerHTML=lines? '<div class="small" style="margin-bottom:2px">תחזית 7 ימים קרובים:</div>'+lines : '';
+      document.getElementById('tazrimNote').textContent='מקור: קובץ התזרים · נקרא '+(tz.readAt? new Date(tz.readAt).toLocaleString('he-IL'):'');
+    }
+
+    // חודש
+    var mk=document.getElementById('monthKpis');
+    if(ins.err){ mk.innerHTML='<div class="kpi warn"><div class="lbl">שגיאה</div><div class="val" style="font-size:.85rem">'+esc(ins.err)+'</div></div>'; }
+    else{
+      var pace=(ins.tips||[]).filter(function(t){return t.type==='pace';})[0];
+      mk.innerHTML=
+        kpi('הכנסות עד כה', ins.revenue.gross,'pos','')+
+        kpi('הוצאות ביומן', ins.totals.actual, '', ins.totals.actual>ins.totals.budget?'warn':'')+
+        kpi('תקציב חודשי', ins.totals.budget,'','gold')+
+        (pace? kpi('קצב חזוי לסוף חודש', pace.projected, pace.projected>=100000?'pos':'', '') : '');
+    }
+
+    // התראות
+    var ab=document.getElementById('alertsBox'); var html='';
+    ((ins.alerts)||[]).forEach(function(a){
+      if(a.type==='over') html+='<div class="msg err">⚠️ <b>'+esc(a.category)+'</b> — '+a.pct+'% מהתקציב ('+fmt(a.actual)+' מתוך '+fmt(a.budget)+')</div>';
+      if(a.type==='cash_low') html+='<div class="msg err">💧 נקודת שפל תזרימית צפויה ב-'+esc(a.date)+': <b>'+fmt(a.balance)+'</b> (תרחיש שמרני)</div>';
+      if(a.type==='unmapped') html+='<div class="msg info">🏷️ '+fmt(a.amount)+' הוצאות החודש בלי סעיף תקציב מזוהה</div>';
+    });
+    ab.innerHTML=html||'<div class="msg ok">✅ אין חריגות מהותיות כרגע</div>';
+
+    // גרפים
+    renderHomeCharts(tz, ins, H);
+}
+
+var _charts={};
+function mkChart(id, cfg){
+  if(!window.Chart) return;
+  var el=document.getElementById(id);
+  if(!el) return;
+  if(_charts[id]){ _charts[id].destroy(); }
+  _charts[id]=new Chart(el.getContext('2d'), cfg);
+}
+function renderHomeCharts(tz, ins, H){
+  var sage='#7a8b6f', amber='#c89b3c', red='#b0533f', ink='#6f6a5e';
+  Chart.defaults.font.family='Assistant, sans-serif';
+  Chart.defaults.color=ink;
+
+  if(tz && !tz.err && tz.daily && tz.daily.length){
+    var d=tz.daily.slice(0,30);
+    mkChart('chartCash',{
+      type:'line',
+      data:{ labels:d.map(function(x){return x.date.slice(0,5);}),
+        datasets:[{ label:'יתרה', data:d.map(function(x){return x.bal;}),
+          borderColor:sage, backgroundColor:'rgba(122,139,111,.12)', fill:true, tension:.3, pointRadius:0, borderWidth:2 }]},
+      options:{ plugins:{legend:{display:false}}, scales:{ y:{ ticks:{callback:function(v){return Math.round(v/1000)+'K';}}}, x:{ticks:{maxTicksLimit:8}} } }
+    });
+  }
+  // שנתי — מהנתונים שכבר נטענו
+  var a=(H&&H.annual)||null;
+  if(a && a.months && a.months.length){
+    var months=a.months;
+    var hasTarget=months.some(function(m){return m.target>0;});
+    var ds=[];
+    if(hasTarget) ds.push({label:'יעד', data:months.map(function(m){return m.target;}), backgroundColor:'rgba(200,155,60,.35)'});
+    ds.push({label:'הכנסות', data:months.map(function(m){return m.revenue;}), backgroundColor:sage});
+    ds.push({label:'הוצאות', data:months.map(function(m){return m.expense;}), backgroundColor:'rgba(176,83,63,.55)'});
+    mkChart('chartAnnual',{
+      type:'bar',
+      data:{ labels:months.map(function(m){return m.month.slice(0,3);}), datasets:ds},
+      options:{ plugins:{legend:{position:'bottom'}}, scales:{ y:{ticks:{callback:function(v){return Math.round(v/1000)+'K';}}} } }
+    });
+  }
+  // עוגת קטגוריות — מהנתונים שכבר נטענו
+  var b=(H&&H.budget)||null;
+  if(b && b.budget){
+    var items=Object.keys(b.budget).map(function(k){var it=b.budget[k];return {name:k,act:it.actualR+it.actualY};})
+      .filter(function(x){return x.act>0;}).sort(function(x,z){return z.act-x.act;}).slice(0,8);
+    if(b.unmapped>0) items.push({name:'ללא סעיף', act:b.unmapped});
+    if(items.length){
+      var palette=[sage,amber,red,'#a79b8d','#5d7d52','#8a6a1e','#5d6d54','#c0a878','#cfc7b8'];
+      mkChart('chartCategories',{
+        type:'doughnut',
+        data:{ labels:items.map(function(x){return x.name;}),
+          datasets:[{ data:items.map(function(x){return x.act;}), backgroundColor:palette, borderWidth:2, borderColor:'#fff' }]},
+        options:{ plugins:{legend:{position:'bottom', labels:{boxWidth:12,font:{size:11}}}} }
+      });
+    }
+  }
+}
+function kpi(lbl,val,valCls,boxCls){
+  return '<div class="kpi '+boxCls+'"><div class="lbl">'+lbl+'</div><div class="val '+valCls+'">'+fmt(val)+'</div></div>';
+}
+
+/* ================= קליטת בנק ================= */
+var parsedRows=[];
+var dz=document.getElementById('dz'), fi=document.getElementById('fileInput');
+dz.addEventListener('click',function(){ fi.click(); });
+dz.addEventListener('dragover',function(e){ e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave',function(){ dz.classList.remove('over'); });
+dz.addEventListener('drop',function(e){ e.preventDefault(); dz.classList.remove('over'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+fi.addEventListener('change',function(){ if(fi.files[0]) handleFile(fi.files[0]); });
+document.getElementById('bankSource').addEventListener('change',function(){
+  var v=this.value;
+  document.getElementById('bankBranch').value = (v==='פועלים')?'יבנה':'ראשון לציון';
+});
+
+var DATE_H=['תאריך','תאריך ערך','תאריך עסקה','תאריך רכישה','תאריך החיוב'];
+var DESC_H=['תיאור','פרטים','שם בית עסק','שם בית העסק','תאור','פירוט','תיאור פעולה','אסמכתא ותיאור','פרוט נוסף','שם ספק'];
+var DEBIT_H=['חובה','סכום חיוב','חיוב','₪ חובה','סכום חובה','סכום עסקה','סכום'];
+var CREDIT_H=['זכות','סכום זכות','₪ זכות','זיכוי'];
+// עמודות שמאפשרות זיהוי תשלומים: סכום העסקה המלא מול החיוב החודשי
+var TOTAL_H=['סכום עסקה','סכום העסקה','סכום מקורי','סכום רכישה','סכום כולל'];
+var CHARGE_H=['סכום חיוב','סכום החיוב','סכום לחיוב','לחיוב','חיוב חודשי'];
+
+// זיהוי סוג קובץ לפי חתימת תוכן (מבוסס על קובץ ההתאמות של Or)
+function detectFileType(wb){
+  var flat='';
+  wb.SheetNames.forEach(function(sn){
+    var rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:''});
+    flat+=rows.slice(0,12).map(function(r){return r.join(' ');}).join(' ');
+  });
+  if(flat.indexOf('פירוט עסקאות בכרטיסים')!==-1) return 'disc_credit';
+  if(flat.indexOf('תנועות בחשבון')!==-1) return 'hap_check';
+  if(flat.indexOf('חיובים קודמים')!==-1||flat.indexOf('רכישות בארץ')!==-1) return 'hap_credit';
+  if((flat.indexOf('שם ספק')!==-1||flat.indexOf('ספק')!==-1) && (flat.indexOf('מעמ')!==-1||flat.indexOf('מע"מ')!==-1||flat.indexOf('מע״מ')!==-1)) return 'vat';
+  if(flat.indexOf('עובר ושב')!==-1||flat.indexOf('דיסקונט')!==-1||(flat.indexOf('יתרה')!==-1&&flat.indexOf('אסמכתא')!==-1)) return 'disc_check';
+  return 'generic';
+}
+function sheetRows(wb){ return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''}); }
+
+// פרסרים ייעודיים (עמודות קבועות לפי הפורמט של כל מקור)
+function parseHapCheck(rows){var o=[];for(var i=5;i<rows.length;i++){var r=rows[i];var d=parseNum(r[6]),c=parseNum(r[7]);if(!d&&!c)continue;var dt=parseAnyDate(r[0]);if(!dt)continue;o.push({date:dt,desc:((r[2]||'')+' '+(r[3]||'')).trim(),debit:d,credit:c});}return o;}
+function parseHapCredit(rows){var o=[],start=-1;for(var i=0;i<rows.length;i++){if((rows[i]||[]).join(' ').indexOf('שם בית עסק')!==-1){start=i+1;break;}}if(start<0)return o;for(var i2=start;i2<rows.length;i2++){var r=rows[i2];var chg=parseNum(r[5]);if(!chg||!r[3])continue;var dt=parseAnyDate(r[2]);if(!dt)continue;o.push({date:dt,desc:r[3],debit:chg,credit:0});}return o;}
+function parseDiscCheck(rows){var o=[];for(var i=9;i<rows.length;i++){var r=rows[i];var amt=parseNum(r[3]);if(!amt)continue;var dt=parseAnyDate(r[0]);if(!dt)continue;if(amt<0)o.push({date:dt,desc:r[2],debit:Math.abs(amt),credit:0});else o.push({date:dt,desc:r[2],debit:0,credit:amt});}return o;}
+function parseDiscCredit(rows){
+  var o=[];
+  for(var i=10;i<rows.length;i++){
+    var r=rows[i];
+    if(!r[1]||String(r[0]).indexOf('הודעה')!==-1)continue;
+    var full=parseNum(r[3]), chg=parseNum(r[8]);
+    var typ=String(r[5]||''), detail=String(r[6]||'').trim();
+    if(!full)continue;
+    var isInst=typ.indexOf('תשלום')!==-1||/\d+\s*מ\s*-\s*\d+/.test(detail);
+    var dt=parseAnyDate(r[2]);
+    if(!dt)continue;
+    var inst=null;
+    if(isInst){
+      // חילוץ "3 מ-6" → תשלום נוכחי מתוך סה"כ
+      var mm=detail.match(/(\d+)\s*מ\s*-?\s*(\d+)/);
+      inst={ full:full, monthly:chg||full, cur:mm?+mm[1]:1, total:mm?+mm[2]:0, detail:detail };
+    }
+    o.push({date:dt, desc:r[1], debit:(isInst&&chg)?chg:full, credit:0, inst:inst});
+  }
+  return o;
+}
+function parseVatFile(rows){var o=[];for(var i=1;i<rows.length;i++){var r=rows[i];var amt=parseNum(r[4]);if(!amt)continue;var dt=parseAnyDate(r[0]);o.push({date:dt||r[0],supplier:r[1],category:r[3],amount:amt,recognized:parseNum(r[5]),vat:parseNum(r[6])});}return o;}
+
+function handleFile(file){
+  var pm=document.getElementById('parseMsg');
+  pm.innerHTML='<div class="msg info">קורא את הקובץ… <span class="spin"></span></div>';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+      var ftype=detectFileType(wb);
+      var rows=sheetRows(wb), parsed=null, srcSel=null, brSel=null, isVat=false;
+      if(ftype==='hap_check'){ parsed=parseHapCheck(rows); srcSel='פועלים'; brSel='יבנה'; }
+      else if(ftype==='hap_credit'){ parsed=parseHapCredit(rows); srcSel='אשראי'; brSel='יבנה'; }
+      else if(ftype==='disc_check'){ parsed=parseDiscCheck(rows); srcSel='דיסקונט'; brSel='ראשון לציון'; }
+      else if(ftype==='disc_credit'){ parsed=parseDiscCredit(rows); srcSel='אשראי'; brSel='ראשון לציון'; }
+      else if(ftype==='vat'){ handleVatFile(parseVatFile(rows)); return; }
+      else {
+        // גנרי: זיהוי כותרות אוטומטי כמו קודם
+        var best=null;
+        wb.SheetNames.forEach(function(sn){
+          var rr=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:false,defval:''});
+          var pr=parseBankRows(rr);
+          if(pr && (!best||pr.rows.length>best.rows.length)) best=pr;
+        });
+        if(!best||!best.rows.length) throw new Error('לא זוהו תנועות. ודאו שזה דף חשבון/אשראי מקורי מהאתר.');
+        parsed=best.rows;
+      }
+      if(!parsed || !parsed.length) throw new Error('הקובץ זוהה כ-'+ftype+' אך לא נמצאו תנועות.');
+      if(srcSel){ document.getElementById('bankSource').value=srcSel; document.getElementById('bankBranch').value=brSel; }
+      classifyRows(parsed);
+    }catch(err){
+      pm.innerHTML='<div class="msg err">'+esc(err.message)+'</div>';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  fi.value='';
+}
+
+// קובץ מע"מ (פייפרלס) — נכנס לתקציב עם מע"מ תשומות אמיתי מהמסמך
+var NO_RECEIPT_KW=['עיריית','ארנונה','ביטוח לאומי','המוסד לביטוח','מכס ומע','דמי כרטיס','עמלה','עמלת','ריבית','הלוואה','משכורת','מס הכנסה','FACEBK','FACEBOOK','GOOGLE','APPLE','OPENAI','YOUTUBE'];
+function handleVatFile(items){
+  var branch=document.getElementById('bankBranch').value;
+  parsedRows=items.map(function(v,idx){
+    var sup=(v.supplier||'').trim();
+    var m=META.suppliers&&META.suppliers[sup];
+    return {
+      id:idx, date:v.date, desc:sup, amount:v.amount, credit:0,
+      branch:(m&&m.branch)||branch,
+      category:(m&&m.category)||v.category||'',
+      vat:'מסמך', vatAmount:v.vat,
+      include:true, matched:!!m,
+      dest:'budget', type:'חשבונית', account:'', isCard:false, isVatDoc:true
+    };
+  });
+  var zero=parsedRows.filter(function(r){return r.vatAmount===0;});
+  renderPreview();
+  document.getElementById('parseMsg').innerHTML='<div class="msg ok">קובץ מע״מ (פייפרלס): '+items.length+' חשבוניות, מע״מ תשומות '+fmt(items.reduce(function(s,v){return s+v.vat;},0))+'.</div>'+
+    (zero.length?'<div class="msg info small">⚠️ '+zero.length+' חשבוניות ללא מע״מ — לרוב תקין לחו״ל (פייסבוק/גוגל) או אגרות; שווה לוודא שלא נשמטה חשבונית ישראלית.</div>':'');
+}
+
+function findHeaderIdx(row, aliases){
+  for(var i=0;i<row.length;i++){
+    var cell=String(row[i]).replace(/\s+/g,' ').trim();
+    if(!cell) continue;
+    for(var a=0;a<aliases.length;a++){
+      if(cell===aliases[a] || cell.indexOf(aliases[a])===0) return i;
+    }
+  }
+  return -1;
+}
+
+function parseBankRows(rows){
+  var hr=-1, iDate=-1, iDesc=-1, iDeb=-1, iCred=-1, iTot=-1, iChg=-1;
+  for(var r=0;r<Math.min(25,rows.length);r++){
+    var d=findHeaderIdx(rows[r],DATE_H);
+    var dd=findHeaderIdx(rows[r],DEBIT_H);
+    if(d!==-1 && dd!==-1){
+      hr=r; iDate=d; iDeb=dd;
+      iDesc=findHeaderIdx(rows[r],DESC_H);
+      iCred=findHeaderIdx(rows[r],CREDIT_H);
+      iTot=findHeaderIdx(rows[r],TOTAL_H);
+      iChg=findHeaderIdx(rows[r],CHARGE_H);
+      break;
+    }
+  }
+  if(hr===-1) return null;
+  var out=[];
+  for(var r2=hr+1;r2<rows.length;r2++){
+    var row=rows[r2];
+    var dt=parseAnyDate(row[iDate]);
+    if(!dt) continue;
+    var deb=parseNum(row[iDeb]);
+    var cred=iCred!==-1? parseNum(row[iCred]) : 0;
+    var desc=iDesc!==-1? String(row[iDesc]).trim() : '';
+    if(!deb && !cred) continue;
+    if(iCred===-1 && deb<0){ cred=-deb; deb=0; }
+    // זיהוי תשלומים: סכום עסקה מלא שונה מהחיוב החודשי
+    var inst=null;
+    if(iTot!==-1 && iChg!==-1 && iTot!==iChg){
+      var full=Math.abs(parseNum(row[iTot])), chg=Math.abs(parseNum(row[iChg]));
+      if(full>0 && chg>0 && full>chg*1.5){
+        var total=Math.round(full/chg);
+        if(total>1 && total<=60){ inst={full:full, monthly:chg, total:total, cur:0}; deb=chg; }
+      }
+    }
+    out.push({date:dt, desc:desc, debit:deb, credit:cred, inst:inst});
+  }
+  return {rows:out};
+}
+// חודשים שחלפו מהרכישה — משמש להשלמת מספר התשלום הנוכחי
+function monthsSince(dstr){
+  var p=String(dstr).split('/');
+  if(p.length<3) return 0;
+  var d=new Date(+p[2], +p[1]-1, 1);
+  var now=new Date(); now.setDate(1); now.setHours(0,0,0,0);
+  return (now.getFullYear()-d.getFullYear())*12 + (now.getMonth()-d.getMonth());
+}
+function parseNum(v){
+  var s=String(v).trim();
+  if(!s) return 0;
+  var neg=/^\(.*\)$/.test(s) || /[-−]/.test(s);
+  var n=parseFloat(s.replace(/[^\d.]/g,''));
+  if(isNaN(n)) return 0;
+  return neg? -n : n;
+}
+function parseAnyDate(v){
+  if(v instanceof Date && !isNaN(v)) return fmtD(v);
+  var s=String(v).trim();
+  var m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if(m){ var y=+m[3]; if(y<100)y+=2000; return ('0'+m[1]).slice(-2)+'/'+('0'+m[2]).slice(-2)+'/'+y; }
+  var m2=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m2) return m2[3]+'/'+m2[2]+'/'+m2[1];
+  return null;
+}
+function fmtD(d){ return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear(); }
+
+var CARD_CO=['כאל','ישראכרט','אמריקן','אמר.','אמקס','דיינרס','ויזה','מקס איט','לאומי קארד'];
+var LOAN_KW=['הלווא','פרעון','פירעון'];
+var CASH_KW=['הפקדת מזומן','מזומן','שיק','שייק'];
+
+function detectType(desc){
+  for(var i=0;i<CARD_CO.length;i++){ if(desc.indexOf(CARD_CO[i])!==-1){
+    if(desc.indexOf('כאל')!==-1) return 'כאל';
+    if(desc.indexOf('ישראכרט')!==-1) return 'ישראכרט';
+    if(desc.indexOf('דיינרס')!==-1) return 'דיינרס';
+    if(desc.indexOf('מקס')!==-1) return 'מקס';
+    return 'אמקס';
+  }}
+  for(var j=0;j<LOAN_KW.length;j++){ if(desc.indexOf(LOAN_KW[j])!==-1) return 'הלוואה'; }
+  for(var k=0;k<CASH_KW.length;k++){ if(desc.indexOf(CASH_KW[k])!==-1) return 'מזומן/שיקים'; }
+  return '';
+}
+
+function classifyRows(rows){
+  var source=document.getElementById('bankSource').value;
+  var isCard=(source==='אשראי');
+  var branch=document.getElementById('bankBranch').value;
+  var account=isCard? '' : source; // דיסקונט / פועלים
+  var supKeys=Object.keys(META.suppliers||{});
+  parsedRows=rows.map(function(r,idx){
+    var match=null;
+    var dn=r.desc.replace(/\s+/g,'');
+    for(var i=0;i<supKeys.length;i++){
+      var k=supKeys[i], kn=k.replace(/\s+/g,'');
+      if(dn.indexOf(kn)!==-1 || kn.indexOf(dn)!==-1){ match=META.suppliers[k]; if(dn===kn) break; }
+    }
+    var type=detectType(r.desc);
+    // זיהוי תשלומים בשלוש רמות:
+    // 1) מהפרסר (השוואת סכום עסקה מול חיוב חודשי)  2) מטקסט התיאור  3) לפי תאריך רכישה ישן
+    var instInfo=r.inst||null;
+    if(!instInfo){
+      var det=detectInstallment(r.desc);
+      if(det) instInfo={cur:det.cur, total:det.total, monthly:r.debit, full:r.debit*det.total};
+    }
+    if(!instInfo && isCard && r.debit>0){
+      // בקובץ אשראי: רכישה מחודש קודם שעדיין מחויבת = עסקת תשלומים
+      var ago=monthsSince(r.date);
+      if(ago>=1 && ago<=59){
+        instInfo={cur:ago+1, total:0, monthly:r.debit, full:0, inferred:true};
+      }
+    }
+    if(instInfo && !instInfo.cur && instInfo.total){
+      // יש סה"כ תשלומים אבל לא ידוע איזה — משלימים לפי תאריך הרכישה
+      instInfo.cur=Math.min(instInfo.total, monthsSince(r.date)+1);
+    }
+    // יעד: אשראי → תקציב בלבד. עו"ש: חיוב חב' אשראי/הלוואה → תזרים בלבד; אחרת → גם וגם
+    var dest;
+    if(isCard) dest='budget';
+    else if(r.credit>0) dest='cash';                       // זיכוי/הכנסה → תזרים בלבד
+    else if(type && type!=='מזומן/שיקים') dest='cash';     // חיוב אשראי / הלוואה
+    else dest='both';
+    return {
+      id:idx, date:r.date, desc:r.desc,
+      amount:r.debit>0? r.debit:0, credit:r.credit,
+      branch:(match&&match.branch)||branch,
+      category:(match&&match.category)||'',
+      vat:(match&&match.vat)||'אוטו',
+      include:true, matched:!!match,
+      dest:dest, type:type||(r.credit>0?'העברות - לקוחות':'הו"ק/העברה'),
+      account:account, isCard:isCard, inst:instInfo
+    };
+  });
+  renderPreview();
+  renderInstBox();
+  var note=isCard? 'קובץ אשראי → נכתב ל<b>תקציב בלבד</b>. הכסף יוצא מהעו״ש רק בחיוב החודשי — ואת זה הבנק כבר יראה בדף העו״ש כשורת "כאל/אמקס", אז שם זה נכנס לתזרים.'
+                 : 'דף '+esc(source)+' (חשבון '+(source==='פועלים'?'יבנה':'ראשון')+' בתזרים):<br>• חיובי אשראי/הלוואות → <b>תזרים בלבד</b><br>• הוצאות ישירות (שכירות, הו״ק) → <b>תקציב + תזרים</b> — בתקציב לפי הסניף שתבחר, בתזרים לפי החשבון<br>• זיכויים → <b>תזרים בלבד</b>';
+  document.getElementById('parseMsg').innerHTML='<div class="msg ok">זוהו '+rows.length+' תנועות.</div><div class="msg info small">'+note+'</div>';
+}
+
+/* ===== עסקאות תשלומים ===== */
+// זיהוי תשלומים מתוך טקסט התיאור — עובד על כל סוגי הקבצים
+function detectInstallment(desc){
+  var s=String(desc||'');
+  // "תשלום 3 מתוך 10" / "3 מ-10" / "3 מ 10" / "תש 3/10" / "3/10"
+  var pats=[
+    /תשלום\s*(\d{1,2})\s*(?:מתוך|מ\s*-?|\/)\s*(\d{1,2})/,
+    /תש[׳']?\s*(\d{1,2})\s*(?:מתוך|מ\s*-?|\/)\s*(\d{1,2})/,
+    /(\d{1,2})\s*מ\s*-\s*(\d{1,2})/,
+    /(\d{1,2})\s*מתוך\s*(\d{1,2})/,
+    /\b(\d{1,2})\s*\/\s*(\d{1,2})\b/
+  ];
+  for(var i=0;i<pats.length;i++){
+    var m=s.match(pats[i]);
+    if(m){
+      var cur=+m[1], total=+m[2];
+      if(total>1 && total<=60 && cur>=1 && cur<=total) return {cur:cur,total:total};
+    }
+  }
+  return null;
+}
+function setInst(id,val){
+  var r=parsedRows[id];
+  if(!r) return;
+  var s=String(val||'').trim();
+  if(!s){ r.inst=null; renderInstBox(); renderPreview(); return; }
+  var m=s.match(/(\d{1,2})\s*[\/\-מ ]+\s*(\d{1,2})/);
+  if(!m){ alert('פורמט: מספר התשלום / סה״כ — למשל 3/10'); return; }
+  var cur=+m[1], total=+m[2];
+  if(!(total>1 && cur>=1 && cur<=total)){ alert('ערכים לא תקינים'); return; }
+  applyInst(r, cur, total);
+  renderInstBox(); renderPreview();
+}
+// חישוב חודשי/מלא לפי איך שמפרשים את הסכום בשורה
+function applyInst(r, cur, total){
+  var rowAmt = (r.inst && r.inst.rowAmount!==undefined) ? r.inst.rowAmount : r.amount;
+  var monthly, full;
+  if(instBase==='full'){          // הסכום בשורה = סכום העסקה המלא → מחלקים
+    full = rowAmt;
+    monthly = Math.round(rowAmt/total*100)/100;
+  } else {                         // הסכום בשורה = החיוב החודשי → מכפילים
+    monthly = rowAmt;
+    full = Math.round(rowAmt*total*100)/100;
+  }
+  r.inst={cur:cur, total:total, monthly:monthly, full:full, rowAmount:rowAmt, manual:true};
+  r.amount = (instMode==='full') ? full : monthly;
+}
+function setInstBase(v){
+  instBase=v;
+  parsedRows.forEach(function(r){
+    if(r.inst && r.inst.total) applyInst(r, r.inst.cur, r.inst.total);
+  });
+  renderInstBox(); renderPreview();
+}
+var instMode='monthly';
+var instBase='full';   // ברירת מחדל: הסכום בשורה הוא סכום העסקה המלא
+function renderInstBox(){
+  var box=document.getElementById('instBox');
+  var insts=parsedRows.filter(function(r){return r.inst;});
+  if(!insts.length){ box.innerHTML=''; return; }
+  var totalMonthly=insts.reduce(function(s,r){return s+(r.inst.monthly||0);},0);
+  var totalFull=insts.reduce(function(s,r){return s+(r.inst.full||0);},0);
+  var remaining=insts.reduce(function(s,r){
+    var left=(r.inst.total||0)-(r.inst.cur||0);
+    return s+(left>0? left*(r.inst.monthly||0) : 0);
+  },0);
+  box.innerHTML='<div class="msg info"><b>💳 זוהו '+insts.length+' עסקאות תשלומים</b><br>'+
+    'חיוב החודש: '+fmt(totalMonthly)+' · סכום מלא: '+fmt(totalFull)+
+    (remaining? ' · יתרה עתידית: '+fmt(remaining):'')+
+    '</div>'+
+    '<div class="frow"><div><label>הסכום בשורה מייצג</label>'+
+    '<select id="instBase" onchange="setInstBase(this.value)">'+
+      '<option value="full">סכום העסקה המלא (יתחלק למספר התשלומים)</option>'+
+      '<option value="monthly">את החיוב החודשי בלבד</option>'+
+    '</select></div>'+
+    '<div><label>מה לרשום בתקציב</label>'+
+    '<select id="instMode" onchange="setInstMode(this.value)">'+
+      '<option value="monthly">רק החיוב החודשי (מומלץ)</option>'+
+      '<option value="full">הסכום המלא בחודש הרכישה</option>'+
+      '<option value="spread">חודשי + פריסת היתרה לתחזית</option>'+
+    '</select></div></div>'+
+    '<div class="small" style="margin-bottom:8px">'+
+      (instMode==='monthly'?'כל חודש ייכנס החיוב שלו — התקציב משקף את התשלום בפועל.':
+       instMode==='full'?'כל הסכום ייזקף לחודש הנוכחי — התקציב יראה חריגה גדולה החודש.':
+       'החיוב החודשי ייכנס לתקציב, ויתרת התשלומים תיווסף לתחזית התזרים כהתחייבות עתידית.')+
+    '</div>';
+  var selB=document.getElementById('instBase');
+  if(selB) selB.value=instBase;
+  var sel=document.getElementById('instMode');
+  if(sel) sel.value=instMode;
+}
+function setInstMode(v){
+  instMode=v;
+  parsedRows.forEach(function(r){
+    if(!r.inst) return;
+    r.amount = (v==='full') ? (r.inst.full||r.amount) : (r.inst.monthly||r.amount);
+  });
+  renderInstBox(); renderPreview();
+}
+function bulkSetBranch(v){
+  if(!v) return;
+  parsedRows.forEach(function(r){ if(r.dest!=='cash') r.branch=v; });
+  renderPreview();
+  document.getElementById('bulkBranch').value='';
+}
+function bulkSetShift(v){
+  if(v==='') return;
+  var n=parseInt(v,10)||0;
+  parsedRows.forEach(function(r){ if(r.dest!=='cash') r.shift=n; });
+  renderPreview();
+  document.getElementById('bulkShift').value='';
+}
+function bulkSetCat(v){
+  if(!v) return;
+  parsedRows.forEach(function(r){ if(r.dest!=='cash') r.category=v; });
+  renderPreview();
+  document.getElementById('bulkCat').value='';
+}
+
+function destOpts(cur,isCard){
+  var opts=isCard? [['budget','תקציב']] : [['both','תקציב + תזרים'],['cash','תזרים בלבד'],['budget','תקציב בלבד']];
+  return opts.map(function(o){return '<option value="'+o[0]+'" '+(o[0]===cur?'selected':'')+'>'+o[1]+'</option>';}).join('');
+}
+
+function renderPreview(){
+  var card=document.getElementById('previewCard');
+  var t=document.getElementById('prevTable');
+  var exp=parsedRows.filter(function(r){return r.amount>0;});
+  var inc=parsedRows.filter(function(r){return r.credit>0;});
+  var isCard=parsedRows.length && parsedRows[0].isCard;
+  document.getElementById('prevCount').textContent='('+exp.length+' חיובים, '+inc.length+' זיכויים)';
+  var catOpts='<option value=""></option>'+(META.categories||[]).map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
+  var html='<tr><th>✔</th><th>תאריך</th><th>תיאור</th><th class="right">סכום</th><th>תשלומים</th><th>שיוך</th><th>יעד</th><th>סניף</th><th>סעיף</th></tr>';
+  exp.forEach(function(r){
+    var instVal = r.inst ? (r.inst.cur||'?')+'/'+(r.inst.total||'?') : '';
+    var instStyle = (r.inst&&r.inst.inferred)?'border-color:var(--amber);background:#fdf8ec':'';
+    html+='<tr class="rowedit">'+
+      '<td><input type="checkbox" '+(r.include?'checked':'')+' onchange="parsedRows['+r.id+'].include=this.checked"></td>'+
+      '<td class="num">'+esc(r.date)+(r.inst&&r.inst.inferred?'<div class="small" style="color:var(--amber)">רכישה ישנה</div>':'')+'</td>'+
+      '<td>'+esc(r.desc)+(r.matched?' <span class="tag">מוכר</span>':(r.type&&r.type!=='הו"ק/העברה'?' <span class="tag y">'+esc(r.type)+'</span>':' <span class="tag y">חדש</span>'))+'</td>'+
+      '<td class="num right"><b>'+fmt(r.amount)+'</b>'+
+        (r.inst&&r.inst.total? '<div class="small">חודשי '+fmt(r.inst.monthly)+' · מלא '+fmt(r.inst.full)+'</div>':'')+'</td>'+
+      '<td><input style="width:62px;padding:4px 5px;font-size:.75rem;text-align:center;'+instStyle+'" placeholder="3/10" value="'+instVal+'" onchange="setInst('+r.id+',this.value)"></td>'+
+      '<td><select onchange="parsedRows['+r.id+'].shift=parseInt(this.value,10)" style="font-size:.72rem">'+
+        [['0','חודש התנועה'],['-1','חודש קודם'],['1','חודש הבא']].map(function(o){
+          return '<option value="'+o[0]+'" '+((r.shift||0)==+o[0]?'selected':'')+'>'+o[1]+'</option>';}).join('')+'</select></td>'+
+      '<td><select onchange="setDest('+r.id+',this.value)">'+destOpts(r.dest,isCard)+'</select></td>'+
+      '<td><select onchange="parsedRows['+r.id+'].branch=this.value" '+(r.dest==='cash'?'disabled':'')+' id="br'+r.id+'">'+
+        ['ראשון לציון','יבנה','משותף'].map(function(b){return '<option value="'+b+'" '+(b===r.branch?'selected':'')+'>'+b+(b==='משותף'?' (50/50)':'')+'</option>';}).join('')+'</select></td>'+
+      '<td><select onchange="parsedRows['+r.id+'].category=this.value" '+(r.dest==='cash'?'disabled':'')+' id="ct'+r.id+'">'+catOpts.replace('<option>'+esc(r.category)+'</option>','<option selected>'+esc(r.category)+'</option>')+'</select></td>'+
+    '</tr>';
+  });
+  if(inc.length && !isCard){
+    html+='<tr><td colspan="9" style="background:var(--amber-l);font-weight:700;padding:6px">זיכויים / הכנסות → תזרים בלבד (לא לתקציב — ההכנסות נקלטות מנייאקס)</td></tr>';
+    inc.forEach(function(r){
+      html+='<tr><td><input type="checkbox" checked onchange="parsedRows['+r.id+'].include=this.checked"></td>'+
+        '<td class="num">'+esc(r.date)+'</td><td>'+esc(r.desc)+' <span class="tag">'+esc(r.type)+'</span></td>'+
+        '<td class="num right" style="color:var(--green-ok)"><b>'+fmt(r.credit)+'</b></td><td colspan="5" class="small">תזרים בלבד</td></tr>';
+    });
+  } else if(inc.length){
+    html+='<tr><td colspan="9" style="background:var(--amber-l);font-weight:700;padding:6px">זיכויים (לא נכתבים מקובץ אשראי)</td></tr>';
+    inc.slice(0,10).forEach(function(r){
+      html+='<tr><td></td><td class="num">'+esc(r.date)+'</td><td>'+esc(r.desc)+'</td><td class="num right" style="color:var(--green-ok)">'+fmt(r.credit)+'</td><td colspan="3"></td></tr>';
+    });
+  }
+  t.innerHTML=html;
+  card.style.display='block';
+  card.scrollIntoView({behavior:'smooth'});
+}
+function setDest(id,v){
+  parsedRows[id].dest=v;
+  var dis=(v==='cash');
+  var br=document.getElementById('br'+id), ct=document.getElementById('ct'+id);
+  if(br) br.disabled=dis;
+  if(ct) ct.disabled=dis;
+}
+
+function clearPreview(){ parsedRows=[]; document.getElementById('previewCard').style.display='none'; document.getElementById('parseMsg').innerHTML=''; }
+
+function commitRows(){
+  var sel=parsedRows.filter(function(r){return r.include && (r.amount>0 || r.credit>0);});
+  var cm=document.getElementById('commitMsg');
+  if(!sel.length){ cm.innerHTML='<div class="msg err">לא נבחרו שורות</div>'; return; }
+
+  var budgetRows=[];
+  function attribMonth(dateStr, shift){
+    if(!shift) return null;
+    var p=String(dateStr).split('/');
+    if(p.length<3) return null;
+    var d=new Date(+p[2], +p[1]-1+shift, 1);
+    return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+  }
+  sel.filter(function(r){return r.amount>0 && (r.dest==='budget'||r.dest==='both');})
+    .forEach(function(r){
+      var base={date:r.date, desc:r.desc, category:r.category, vat:r.vat, paid:'✅ שולם'};
+      if(r.isVatDoc) base.vatAmount=r.vatAmount;
+      var cm=attribMonth(r.date, r.shift||0);
+      if(cm) base.chargeMonth=cm;
+      if(r.branch==='משותף'){
+        // הוצאה משותפת — מפוצלת 50/50 בין הסניפים (שתי שורות נפרדות ביומן)
+        var half=Math.round(r.amount/2*100)/100;
+        budgetRows.push(Object.assign({}, base, {amount:half, branch:'ראשון לציון', desc:'½ '+r.desc}));
+        budgetRows.push(Object.assign({}, base, {amount:Math.round((r.amount-half)*100)/100, branch:'יבנה', desc:'½ '+r.desc}));
+      } else {
+        budgetRows.push(Object.assign({}, base, {amount:r.amount, branch:r.branch}));
+      }
+    });
+  var cashRows=sel.filter(function(r){return !r.isCard && (r.dest==='cash'||r.dest==='both');})
+    .map(function(r){ return {date:r.date, account:r.account, desc:r.desc,
+      amount: r.credit>0? r.credit : -r.amount,
+      type:r.type, inBudget:(r.dest==='both'), source:'ייבוא עו"ש'}; });
+
+  var noCat=budgetRows.filter(function(r){return !r.category;}).length;
+  if(noCat && !confirm(noCat+' שורות לתקציב בלי סעיף — להמשיך?')) return;
+
+  var btn=document.getElementById('commitBtn'); btn.disabled=true;
+  var cm2=document.getElementById('commitMsg');
+  cm2.innerHTML='<div class="msg info">בודק כפילויות… <span class="spin"></span></div>';
+
+  // בדיקת כפילויות לפי תאריך+סכום — תופס הוצאות שהוזנו ידנית בשם אחר
+  var dupCheck = budgetRows.length
+    ? api({action:'dup_check', rows:JSON.stringify(budgetRows.slice(0,60))}).catch(function(){ return {dups:[]}; })
+    : Promise.resolve({dups:[]});
+
+  dupCheck.then(function(dc){
+    if(dc.dups && dc.dups.length){
+      var lines=dc.dups.slice(0,6).map(function(d){ return '• '+d.date+' '+fmt(d.amount)+' — כבר קיים כ"'+d.existing+'"'; }).join('\n');
+      var msg='⚠️ נמצאו '+dc.dups.length+' תנועות שכבר קיימות ביומן באותו תאריך וסכום (בשם אחר):\n\n'+lines+
+        (dc.dups.length>6?'\n…ועוד '+(dc.dups.length-6):'')+
+        '\n\nלהמשיך בכל זאת? (עלולה להיווצר ספירה כפולה)';
+      if(!confirm(msg)){ btn.disabled=false; cm2.innerHTML='<div class="msg info">הכתיבה בוטלה</div>'; return null; }
+    }
+    return true;
+  }).then(function(go){
+    if(!go) return;
+    return doCommit(budgetRows, cashRows, btn, cm2);
+  });
+}
+
+function doCommit(budgetRows, cashRows, btn, cm){
+  var stats={bAdd:0,bSkip:0,cAdd:0,cSkip:0};
+  cm.innerHTML='<div class="msg info">כותב… <span class="spin"></span></div>';
+
+  return writeChunks('add',budgetRows,function(a,s){stats.bAdd+=a;stats.bSkip+=s;})
+  .then(function(){ return writeChunks('cash_add',cashRows,function(a,s){stats.cAdd+=a;stats.cSkip+=s;}); })
+  .then(function(){
+    if(stats.cAdd>0) return api({action:'sync_banks'}).catch(function(){ return {written:[]}; });
+    return {written:[]};
+  })
+  .then(function(sync){
+    // מצב "פריסה" — יתרת התשלומים נכנסת לתחזית התזרים
+    if(instMode!=='spread') return sync;
+    var future=[];
+    parsedRows.forEach(function(r){
+      if(!r.inst || !r.include) return;
+      var left=(r.inst.total||0)-(r.inst.cur||0);
+      if(left<=0) return;
+      var d=parseAnyDate(r.date);
+      if(!d) return;
+      var parts=d.split('/');
+      var base=new Date(+parts[2], +parts[1]-1, Math.min(+parts[0],28));
+      for(var k=1;k<=Math.min(left,12);k++){
+        var nd=new Date(base.getFullYear(), base.getMonth()+k, Math.min(base.getDate(),28));
+        future.push({
+          date:('0'+nd.getDate()).slice(-2)+'/'+('0'+(nd.getMonth()+1)).slice(-2)+'/'+nd.getFullYear(),
+          kind:'הוצאה', desc:r.desc+' (תשלום '+((r.inst.cur||1)+k)+'/'+r.inst.total+')',
+          amount:r.inst.monthly, branch:r.branch==='משותף'?'משותף':r.branch,
+          category:r.category||'הוצאות קבועות', confidence:90
+        });
+      }
+    });
+    if(!future.length) return sync;
+    var chunks=[]; for(var i=0;i<future.length;i+=8) chunks.push(future.slice(i,i+8));
+    return chunks.reduce(function(p,ch){
+      return p.then(function(){ return api({action:'fc_apply', rows:JSON.stringify(ch)}); });
+    },Promise.resolve()).then(function(){ sync.installmentsAdded=future.length; return sync; })
+      .catch(function(){ return sync; });
+  })
+  .then(function(sync){
+    btn.disabled=false;
+    var h='<div class="msg ok">✅ תקציב: '+stats.bAdd+' נוספו'+(stats.bSkip?' ('+stats.bSkip+' כפולות דולגו)':'')+
+      ' · תזרים: '+stats.cAdd+' נוספו'+(stats.cSkip?' ('+stats.cSkip+' כפולות)':'')+'</div>';
+    var noCatN=budgetRows.filter(function(r){return !r.category;}).length;
+    if(noCatN) h+='<div class="msg info">🏷️ '+noCatN+' תנועות נכתבו <b>ללא סעיף תקציב</b> — הן ביומן אבל לא יופיעו בטבלת התקציב עד שיסווגו. עברו לטאב 📊 תקציב → "השלמת סיווג".</div>';
+    if(stats.bAdd===0 && stats.bSkip>0) h+='<div class="msg info">ℹ️ כל תנועות התקציב כבר היו קיימות מניסיון קודם — לכן 0 נוספו.</div>';
+    if(sync.installmentsAdded) h+='<div class="msg info">💳 '+sync.installmentsAdded+' תשלומים עתידיים נוספו לתחזית התזרים</div>';
+    if(sync.written && sync.written.length) h+='<div class="msg info small">🔄 עודכנו בלוחות הבנקים: '+sync.written.length+' תאים ('+esc(sync.written.slice(0,3).join(' | '))+(sync.written.length>3?'…':'')+')</div>';
+    cm.innerHTML=h;
+    recentLoaded=false;
+    insLoaded=false; bgCache=null;   // התקציב ייטען מחדש בכניסה לטאב
+  })
+  .catch(function(e){
+    btn.disabled=false;
+    cm.innerHTML='<div class="msg err">'+esc(e.message)+'</div>';
+  });
+}
+
+function writeChunks(action,rows,onDone){
+  if(!rows.length) return Promise.resolve();
+  // בניית קבוצות לפי אורך ה-URL המקודד (עברית = ~9 תווים לתו) כדי לא לחצות את גבול ה-GET של גוגל (~8K).
+  var MAX=1600; // תווים גולמיים ל-JSON לפני קידוד; אחרי encode ≈ 6-7K, בטוח
+  var chunks=[], cur=[], curLen=0;
+  rows.forEach(function(r){
+    var rLen=JSON.stringify(r).length;
+    if(cur.length && (curLen+rLen>MAX || cur.length>=8)){ chunks.push(cur); cur=[]; curLen=0; }
+    cur.push(r); curLen+=rLen;
+  });
+  if(cur.length) chunks.push(cur);
+  return chunks.reduce(function(p,chunk){
+    return p.then(function(){
+      return api({action:action, rows:JSON.stringify(chunk)}).then(function(res){ onDone(res.added,res.skipped); });
+    });
+  },Promise.resolve());
+}
+
+/* ================= הזנה ידנית ================= */
+document.getElementById('mDesc').addEventListener('change',function(){
+  var s=META.suppliers && META.suppliers[this.value.trim()];
+  if(s){
+    if(s.category) document.getElementById('mCat').value=s.category;
+    if(s.branch) document.getElementById('mBranch').value=s.branch;
+    if(s.vat) document.getElementById('mVat').value=s.vat;
+  }
+});
+function manualAdd(){
+  var mm=document.getElementById('mMsg');
+  var d=document.getElementById('mDate').value, a=parseFloat(document.getElementById('mAmt').value);
+  var desc=document.getElementById('mDesc').value.trim();
+  if(!d||!a||!desc){ mm.innerHTML='<div class="msg err">חסרים תאריך / סכום / תיאור</div>'; return; }
+  var btn=document.getElementById('mAddBtn'); btn.disabled=true;
+  mm.innerHTML='<div class="msg info">מוסיף… <span class="spin"></span></div>';
+  api({action:'add', rows:JSON.stringify([{
+    date:ddmmyyyy(d), desc:desc, amount:a,
+    branch:document.getElementById('mBranch').value,
+    category:document.getElementById('mCat').value,
+    vat:document.getElementById('mVat').value,
+    paid:document.getElementById('mPaid').value,
+    note:document.getElementById('mNote').value.trim()
+  }])}).then(function(res){
+    btn.disabled=false;
+    mm.innerHTML= res.added? '<div class="msg ok">✅ נוסף ליומן</div>' : '<div class="msg info">תנועה זהה כבר קיימת ביומן — לא נוסף</div>';
+    document.getElementById('mAmt').value=''; document.getElementById('mDesc').value=''; document.getElementById('mNote').value='';
+    loadRecent();
+  }).catch(function(e){ btn.disabled=false; mm.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+function loadRecent(){
+  var t=document.getElementById('recentTable');
+  t.innerHTML='<tr><td><span class="spin"></span></td></tr>';
+  api({action:'journal', limit:'15'}).then(function(j){
+    var H=j.headers;
+    var iD=hIdx(H,'תאריך'), iS=hIdx(H,'ספק'), iA=hIdx(H,'סכום (כולל'), iB=hIdx(H,'סניף'), iC=hIdx(H,'סעיף');
+    var html='<tr><th>תאריך</th><th>ספק</th><th class="right">סכום</th><th>סניף</th><th>סעיף</th></tr>';
+    j.rows.slice().reverse().forEach(function(r){
+      html+='<tr><td class="num">'+esc(r[iD])+'</td><td>'+esc(r[iS])+'</td><td class="num right"><b>'+esc(r[iA])+'</b></td><td><span class="tag'+(String(r[iB]).indexOf('יבנה')!==-1?' y':'')+'">'+esc(r[iB])+'</span></td><td class="small">'+esc(r[iC])+'</td></tr>';
+    });
+    t.innerHTML=html;
+  }).catch(function(e){ t.innerHTML='<tr><td class="msg err">'+esc(e.message)+'</td></tr>'; });
+}
+function hIdx(H,name){ for(var i=0;i<H.length;i++){ if(String(H[i]).indexOf(name)!==-1) return i; } return -1; }
+
+/* ================= מע"מ ================= */
+function buildVatPeriods(){
+  var sel=document.getElementById('vatPeriod');
+  var y=2026, pairs=[['01','02'],['03','04'],['05','06'],['07','08'],['09','10'],['11','12']];
+  var names=['ינואר–פברואר','מרץ–אפריל','מאי–יוני','יולי–אוגוסט','ספטמבר–אוקטובר','נובמבר–דצמבר'];
+  var nowM=new Date().getMonth()+1;
+  pairs.forEach(function(p,i){
+    var o=document.createElement('option');
+    o.value=y+'-'+p[0]+','+y+'-'+p[1];
+    o.textContent=names[i]+' '+y;
+    if(nowM>=+p[0] && nowM<=+p[1]) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+function loadVat(){
+  var body=document.getElementById('vatBody');
+  body.innerHTML='<div class="msg info">מחשב… <span class="spin"></span></div>';
+  api({action:'vat', months:document.getElementById('vatPeriod').value}).then(function(v){
+    var t=v.totals;
+    var due=t.netDue;
+    var html='<div class="kpis" style="margin-bottom:10px">'+
+      kpi('מע״מ עסקאות (פלט)', t.outputVat,'','')+
+      kpi('מע״מ תשומות', t.inputVat,'','gold')+
+      kpi(due>=0?'לתשלום למע״מ':'החזר צפוי', Math.abs(due), due>=0?'neg':'pos', due>=0?'warn':'')+
+    '</div>';
+    html+='<table><tr><th>חודש</th><th class="right">הכנסות</th><th class="right">מע״מ עסקאות</th><th class="right">מע״מ תשומות</th><th class="right">נטו</th></tr>';
+    Object.keys(v.months).forEach(function(m){
+      var d=v.months[m];
+      var n=d.outputVat-d.inputVat;
+      html+='<tr><td>'+heMonth(m)+'</td><td class="num right">'+fmt(d.revenueGross)+'</td><td class="num right">'+fmt(d.outputVat)+'</td><td class="num right">'+fmt(d.inputVat)+'</td><td class="num right" style="color:'+(n>=0?'var(--red)':'var(--green-ok)')+';font-weight:700">'+fmt(n)+'</td></tr>';
+    });
+    html+='</table>';
+    html+='<div class="msg info small" style="margin-top:10px">מע״מ עסקאות מחושב מטבלת ההכנסות היומיות (סה״כ − ללא מע״מ). מע״מ תשומות מעמודת המע״מ ביומן ההוצאות לפי חודש חיוב (ח״ח). לפני דיווח — לאמת מול הנה״ח (אופיר).</div>';
+    body.innerHTML=html;
+  }).catch(function(e){ body.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+/* ================= השוואת מסמכי מע"מ (לוגיקת ה-reconciliation) ================= */
+var vatDocs={vat:null, charges:[]};
+var vatDz=document.getElementById('vatDz'), vatFi=document.getElementById('vatFileInput');
+vatDz.addEventListener('click',function(){ vatFi.click(); });
+vatDz.addEventListener('dragover',function(e){ e.preventDefault(); vatDz.classList.add('over'); });
+vatDz.addEventListener('dragleave',function(){ vatDz.classList.remove('over'); });
+vatDz.addEventListener('drop',function(e){ e.preventDefault(); vatDz.classList.remove('over'); vatAddFiles(e.dataTransfer.files); });
+vatFi.addEventListener('change',function(){ vatAddFiles(vatFi.files); vatFi.value=''; });
+
+var TYPE_LABELS={vat:'קובץ מע״מ (פייפרלס)', hap_check:'עו״ש פועלים', hap_credit:'אשראי פועלים', disc_check:'עו״ש דיסקונט', disc_credit:'אשראי דיסקונט', generic:'קובץ בנק (גנרי)'};
+
+function vatAddFiles(files){
+  Array.prototype.forEach.call(files,function(file){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+        var ftype=detectFileType(wb), rows=sheetRows(wb);
+        if(ftype==='vat'){ vatDocs.vat={name:file.name, items:parseVatFile(rows)}; }
+        else{
+          var parsed;
+          if(ftype==='hap_check') parsed=parseHapCheck(rows);
+          else if(ftype==='hap_credit') parsed=parseHapCredit(rows);
+          else if(ftype==='disc_check') parsed=parseDiscCheck(rows);
+          else if(ftype==='disc_credit') parsed=parseDiscCredit(rows);
+          else{
+            var best=null;
+            wb.SheetNames.forEach(function(sn){
+              var rr=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:false,defval:''});
+              var pr=parseBankRows(rr);
+              if(pr&&(!best||pr.rows.length>best.rows.length)) best=pr;
+            });
+            parsed=best?best.rows:[];
+          }
+          if(parsed.length) vatDocs.charges.push({name:file.name, type:ftype, rows:parsed});
+        }
+        renderVatFiles(); vatRecon();
+      }catch(err){
+        document.getElementById('vatReconBody').innerHTML='<div class="msg err">'+esc(file.name)+': '+esc(err.message)+'</div>';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+function renderVatFiles(){
+  var h='';
+  if(vatDocs.vat) h+='<span class="tag" style="margin:2px">🧾 '+esc(TYPE_LABELS.vat)+' · '+vatDocs.vat.items.length+' חשבוניות</span>';
+  vatDocs.charges.forEach(function(c,i){
+    h+='<span class="tag y" style="margin:2px">🏦 '+esc(TYPE_LABELS[c.type]||c.type)+' · '+c.rows.length+' <a href="#" onclick="vatDocs.charges.splice('+i+',1);renderVatFiles();vatRecon();return false" style="color:var(--red)">✕</a></span>';
+  });
+  document.getElementById('vatFiles').innerHTML=h;
+}
+
+function vatRecon(){
+  var body=document.getElementById('vatReconBody');
+  if(!vatDocs.vat && !vatDocs.charges.length){ body.innerHTML=''; return; }
+  var html='';
+
+  if(vatDocs.vat){
+    var items=vatDocs.vat.items;
+    var totAmt=items.reduce(function(s,v){return s+v.amount;},0);
+    var totVat=items.reduce(function(s,v){return s+v.vat;},0);
+    var zero=items.filter(function(v){return v.vat===0;});
+    html+='<div class="kpis" style="margin:10px 0">'+
+      kpi('חשבוניות במסמך', items.length,'','')+
+      kpi('סה״כ הוצאות', totAmt,'','')+
+      kpi('מע״מ תשומות אמיתי', totVat,'pos','gold')+
+    '</div>';
+    if(zero.length){
+      html+='<div class="msg info small">⚠️ '+zero.length+' חשבוניות ללא מע״מ (סה״כ '+fmt(zero.reduce(function(s,v){return s+v.amount;},0))+') — תקין לחו״ל/אגרות, שווה לוודא ישראליות:</div>';
+      html+='<div class="small" style="margin:4px 0 10px">'+zero.slice(0,8).map(function(v){return esc(v.supplier)+' ('+fmt(v.amount)+')';}).join(' · ')+(zero.length>8?' ועוד…':'')+'</div>';
+    }
+  }
+
+  if(vatDocs.vat && vatDocs.charges.length){
+    // התאמת חיובים ↔ חשבוניות לפי סכום (±1₪), חד-פעמית לכל חשבונית
+    var pool=vatDocs.vat.items.map(function(v){return {amt:v.amount, used:false, sup:v.supplier};});
+    var missing=[], matched=0, exempt=0;
+    vatDocs.charges.forEach(function(cf){
+      cf.rows.forEach(function(r){
+        var amt=r.debit;
+        if(!amt||amt<=0) return;
+        var desc=(r.desc||'').toString();
+        if(NO_RECEIPT_KW.some(function(k){return desc.indexOf(k)!==-1;})){ exempt++; return; }
+        var hit=null;
+        for(var i=0;i<pool.length;i++){
+          if(!pool[i].used && Math.abs(pool[i].amt-amt)<=1){ hit=pool[i]; break; }
+        }
+        if(hit){ hit.used=true; matched++; }
+        else missing.push({date:r.date, desc:desc, amount:amt, src:TYPE_LABELS[cf.type]||cf.type});
+      });
+    });
+    missing.sort(function(a,z){return z.amount-a.amount;});
+    var missSum=missing.reduce(function(s,m){return s+m.amount;},0);
+    var missVat=missSum*0.18/1.18;
+    html+='<div class="kpis" style="margin:10px 0">'+
+      kpi('חיובים עם חשבונית', matched,'pos','')+
+      '<div class="kpi '+(missing.length?'warn':'')+'"><div class="lbl">חיובים בלי חשבונית</div><div class="val '+(missing.length?'neg':'pos')+'">'+missing.length+'</div></div>'+
+      kpi('מע״מ אבוד משוער', Math.round(missVat), missing.length?'neg':'', missing.length?'warn':'')+
+    '</div>';
+    if(exempt) html+='<div class="small" style="margin-bottom:6px">🔕 '+exempt+' חיובים סווגו כפטורים/ללא קבלה צפויה (עמלות, ביטוח לאומי, חו״ל וכו׳)</div>';
+    if(missing.length){
+      html+='<table><tr><th>תאריך</th><th>בית עסק</th><th class="right">סכום</th><th>מקור</th></tr>';
+      missing.slice(0,25).forEach(function(m){
+        html+='<tr><td class="num">'+esc(m.date)+'</td><td>'+esc(m.desc)+'</td><td class="num right"><b>'+fmt(m.amount)+'</b></td><td class="small">'+esc(m.src)+'</td></tr>';
+      });
+      html+='</table>';
+      if(missing.length>25) html+='<div class="small">ועוד '+(missing.length-25)+'…</div>';
+      html+='<div class="msg info small" style="margin-top:8px">💡 לבקש חשבוניות מהספקים האלה לפני הדיווח — כל חשבונית שתושג מחזירה ~15.25% מהסכום כמע״מ תשומות.</div>';
+    } else {
+      html+='<div class="msg ok">✅ לכל החיובים נמצאה חשבונית תואמת</div>';
+    }
+  } else if(vatDocs.charges.length && !vatDocs.vat){
+    html+='<div class="msg info small">הועלו דפי חיובים — הוסיפו גם את קובץ המע״מ מפייפרלס כדי לזהות חיובים בלי חשבונית.</div>';
+  }
+  body.innerHTML=html;
+}
+
+
+/* ================= נקודת איזון ================= */
+var beCache=null;
+function loadBreakeven(){
+  var m=document.getElementById('beMonth').value||curMonth();
+  document.getElementById('beMonthLbl').textContent=heMonth(m);
+  var body=document.getElementById('beBody');
+  body.innerHTML='<div class="msg info">מחשב… <span class="spin"></span></div>';
+  api({action:'breakeven', month:m}).then(function(r){
+    beCache=r; renderBreakeven();
+  }).catch(function(e){ body.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+function beCard(title, d){
+  if(!d) return '';
+  var reached=d.reached;
+  var pct=d.breakevenMonth>0? Math.min(150, Math.round(d.revenue/d.breakevenMonth*100)) : 0;
+  var col=reached?'var(--green-ok)':'var(--red)';
+  return '<div class="card" style="box-shadow:none;padding:12px;margin-bottom:10px;background:'+(reached?'var(--sage-l)':'var(--red-l)')+'">'+
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:8px">'+
+      '<b class="disp" style="font-size:1.05rem">'+title+'</b>'+
+      '<span style="font-weight:800;color:'+col+'">'+(reached?'✓ מעל האיזון':'✗ מתחת לאיזון')+'</span>'+
+    '</div>'+
+    '<div class="kpis" style="margin-bottom:8px">'+
+      '<div class="kpi" style="background:#fff"><div class="lbl">איזון חודשי</div><div class="val">'+(d.breakevenMonth!==null?fmt(d.breakevenMonth):'—')+'</div></div>'+
+      '<div class="kpi" style="background:#fff"><div class="lbl">ליום פעילות</div><div class="val">'+(d.breakevenDayActive!==null?fmt(d.breakevenDayActive):'—')+'</div></div>'+
+      '<div class="kpi" style="background:#fff"><div class="lbl">הכנסות בפועל</div><div class="val" style="color:'+col+'">'+fmt(d.revenue)+'</div></div>'+
+      '<div class="kpi" style="background:#fff"><div class="lbl">'+((d.gap||0)>=0?'מעל האיזון':'חסר לאיזון')+'</div><div class="val" style="color:'+col+'">'+fmt(Math.abs(d.gap||0))+'</div></div>'+
+    '</div>'+
+    '<div class="bar" style="height:12px"><i style="width:'+Math.min(100,pct)+'%;background:'+col+'"></i></div>'+
+    '<div class="small" style="margin-top:6px">'+
+      'קבועות '+fmt(d.fixed)+' · משתנות '+fmt(d.variable)+' · שיעור תרומה <b>'+d.contributionMargin+'%</b>'+
+      (d.safetyMargin!==null? ' · מרווח ביטחון '+d.safetyMargin+'%':'')+
+      (d.breakevenDayCalendar!==null? ' · ליום קלנדרי '+fmt(d.breakevenDayCalendar):'')+
+    '</div></div>';
+}
+function renderBreakeven(){
+  if(!beCache) return;
+  var r=beCache, body=document.getElementById('beBody'), b=r.branches;
+  var html='<div class="msg info small">נקודת איזון = הוצאות קבועות ÷ שיעור התרומה. שיעור התרומה = כמה מכל שקל הכנסה נשאר אחרי ההוצאות המשתנות.<br>'+
+    r.daysActive+' ימי פעילות מתוך '+r.daysInMonth+' · הכנסה ממוצעת ליום פעילות '+fmt(r.avgDailyRevenue)+'</div>';
+  html+=beCard('🏢 מאוחד', b.combined);
+  html+=beCard('📍 ראשון לציון', b.rishon);
+  html+=beCard('📍 יבנה', b.yavne);
+  body.innerHTML=html;
+
+  var t=document.getElementById('beItems');
+  var fx=r.items.filter(function(x){return x.kind==='fixed';});
+  var vr=r.items.filter(function(x){return x.kind==='variable';});
+  var totF=fx.reduce(function(s,x){return s+x.actual;},0);
+  var totV=vr.reduce(function(s,x){return s+x.actual;},0);
+  var h='<tr><th>סעיף</th><th class="right">ראשון</th><th class="right">יבנה</th><th class="right">סה״כ</th><th>סיווג</th></tr>';
+  h+='<tr><td colspan="5" style="background:var(--sage-l);font-weight:800;padding:5px">🔒 קבועות — '+fmt(totF)+'</td></tr>';
+  fx.forEach(function(x){ h+=beRow(x); });
+  h+='<tr><td colspan="5" style="background:var(--amber-l);font-weight:800;padding:5px">📊 משתנות — '+fmt(totV)+'</td></tr>';
+  vr.forEach(function(x){ h+=beRow(x); });
+  t.innerHTML=h;
+}
+function beRow(x){
+  var isFixed=x.kind==='fixed';
+  return '<tr><td style="font-weight:600">'+esc(x.name)+(x.auto?'':' <span class="small">(ידני)</span>')+'</td>'+
+    '<td class="num right small">'+fmt(x.actualR)+'</td>'+
+    '<td class="num right small">'+fmt(x.actualY)+'</td>'+
+    '<td class="num right"><b>'+fmt(x.actual)+'</b></td>'+
+    '<td><select onchange="setFixed(this.getAttribute(\'data-c\'),this.value)" data-c="'+esc(x.name)+'" style="font-size:.72rem">'+
+      '<option value="fixed" '+(isFixed?'selected':'')+'>🔒 קבועה</option>'+
+      '<option value="variable" '+(!isFixed?'selected':'')+'>📊 משתנה</option>'+
+      '<option value="auto">↺ אוטומטי</option>'+
+    '</select></td></tr>';
+}
+function setFixed(cat,val){
+  api({action:'set_fixed', category:cat, value:val}).then(function(){ loadBreakeven(); })
+    .catch(function(e){ alert(e.message); });
+}
+
+function loadAnnual(){
+  var kp=document.getElementById('annualKpis'), tb=document.getElementById('annualTable');
+  kp.innerHTML='<div class="msg info" style="grid-column:1/-1">טוען… <span class="spin"></span></div>';
+  api({action:'annual'}).then(function(a){
+    var months=a.months||[];
+    if(!months.length){
+      kp.innerHTML='<div class="msg info" style="grid-column:1/-1">אין עדיין נתונים לשנה '+(a.year||'')+'</div>';
+      tb.innerHTML=''; return;
+    }
+    var totT=0,totR=0,totE=0;
+    months.forEach(function(m){ totT+=m.target; totR+=m.revenue; totE+=m.expense; });
+    var pct=totT>0?Math.round(totR/totT*100):0;
+    var profit=totR-totE;
+    kp.innerHTML=
+      kpi('הכנסות מצטברות',totR,'pos','')+
+      kpi('הוצאות מצטברות',totE,'','gold')+
+      '<div class="kpi '+(profit>=0?'':'warn')+'"><div class="lbl">רווח/הפסד</div><div class="val '+(profit>=0?'pos':'neg')+'">'+fmt(profit)+'</div></div>'+
+      (totT>0?'<div class="kpi '+(pct>=100?'':'warn')+'"><div class="lbl">עמידה ביעד</div><div class="val '+(pct>=100?'pos':'')+'">'+pct+'%</div></div>':'');
+
+    var html='<tr><th>חודש</th><th class="right">יעד</th><th class="right">הכנסות</th><th class="right">הוצאות</th><th class="right">רווח</th><th style="width:20%">ביצוע</th></tr>';
+    months.forEach(function(m){
+      var p=m.target>0?Math.round(m.revenue/m.target*100):0;
+      var col=p>=100?'var(--green-ok)':p>=70?'var(--amber)':'var(--red)';
+      html+='<tr><td style="font-weight:600">'+esc(m.month)+(m.days?'<div class="small">'+m.days+' ימי פעילות</div>':'')+'</td>'+
+        '<td class="num right" style="cursor:pointer;color:var(--sage-d)" onclick="editTarget(\''+esc(m.month)+'\','+m.target+')">'+(m.target?fmt(m.target):'—')+' ✎</td>'+
+        '<td class="num right"><b>'+fmt(m.revenue)+'</b>'+
+          ((m.rishon||m.yavne)?'<div class="small">ר: '+fmt(m.rishon)+' · י: '+fmt(m.yavne)+'</div>':'')+'</td>'+
+        '<td class="num right">'+fmt(m.expense)+'</td>'+
+        '<td class="num right" style="font-weight:700;color:'+(m.profit>=0?'var(--green-ok)':'var(--red)')+'">'+fmt(m.profit)+'</td>'+
+        '<td>'+(m.target>0?'<div class="small">'+p+'%</div><div class="bar"><i style="width:'+Math.min(100,p)+'%;background:'+col+'"></i></div>':'<span class="small">אין יעד</span>')+'</td></tr>';
+    });
+    html+='<tr style="border-top:2px solid var(--sage-l);font-weight:900;background:var(--sage-l)">'+
+      '<td>סה״כ</td><td class="num right">'+(totT?fmt(totT):'—')+'</td><td class="num right">'+fmt(totR)+'</td>'+
+      '<td class="num right">'+fmt(totE)+'</td><td class="num right" style="color:'+(profit>=0?'var(--green-ok)':'var(--red)')+'">'+fmt(profit)+'</td>'+
+      '<td class="num" style="text-align:center">'+(totT?pct+'%':'')+'</td></tr>';
+    tb.innerHTML=html;
+    if(!totT) tb.innerHTML+='<div class="msg info small" style="margin-top:8px">💡 לחצו על ✎ בעמודת היעד כדי להגדיר יעדי הכנסה חודשיים.</div>';
+  }).catch(function(e){ kp.innerHTML='<div class="msg err" style="grid-column:1/-1">'+esc(e.message)+'</div>'; });
+}
+function editTarget(month,cur){
+  var v=prompt('יעד הכנסה ל'+month+' (₪):', cur||'');
+  if(v===null) return;
+  var n=parseFloat(String(v).replace(/[^\d.\-]/g,''));
+  if(isNaN(n)){ alert('מספר לא תקין'); return; }
+  api({action:'set_target', month:month, value:n}).then(function(){
+    annualLoaded=false; loadAnnual(); annualLoaded=true;
+  }).catch(function(e){ alert(e.message); });
+}
+var pfItems=[];
+function loadProfit(){
+  var kp=document.getElementById('profitKpis'), tb=document.getElementById('profitTable');
+  kp.innerHTML='<div class="msg info" style="grid-column:1/-1">טוען… <span class="spin"></span></div>';
+  api({action:'profit'}).then(function(pr){
+    var items=(pr.items||[]).filter(function(x){return x.name;});
+    pfItems=items;
+    if(!items.length){
+      kp.innerHTML='<div class="msg info" style="grid-column:1/-1">אין עדיין מוצרים — הוסיפו במחשבון למטה</div>';
+      tb.innerHTML=''; document.getElementById('profitNote').textContent=pr.note||''; return;
+    }
+    items.forEach(function(x){
+      x.margin = x.sell>0 ? Math.round(x.profit/x.sell*100) : 0;
+      x.markup = x.cost>0 ? Math.round((x.sell-x.cost)/x.cost*100) : 0;
+      x.monthly = x.profit * (x.qty||0);   // תרומה חודשית לרווח
+    });
+    var totalContribution=items.reduce(function(s,x){return s+x.monthly;},0);
+    items.forEach(function(x){ x.share = totalContribution>0 ? Math.round(x.monthly/totalContribution*100) : 0; });
+
+    var avgMargin=Math.round(items.reduce(function(s,x){return s+x.margin;},0)/items.length);
+    var byContribution=items.slice().sort(function(a,z){return z.monthly-a.monthly;});
+    var best=byContribution[0];
+    var losers=items.filter(function(x){return x.profit<=0;});
+    var thin=items.filter(function(x){return x.margin>0 && x.margin<25;});
+
+    kp.innerHTML=
+      kpi('תרומה חודשית לרווח', totalContribution,'pos','')+
+      '<div class="kpi"><div class="lbl">רווחיות ממוצעת</div><div class="val">'+avgMargin+'%</div></div>'+
+      '<div class="kpi gold"><div class="lbl">מנוע הרווח</div><div class="val" style="font-size:.95rem">'+esc(best.name)+'</div><div class="small">'+best.share+'% מהרווח</div></div>'+
+      (losers.length? '<div class="kpi warn"><div class="lbl">מוצרים בהפסד</div><div class="val neg">'+losers.length+'</div></div>':'');
+
+    // גרף תרומה לרווח
+    var top=byContribution.filter(function(x){return x.monthly>0;}).slice(0,8);
+    if(top.length && window.Chart){
+      mkChart('chartProfit',{
+        type:'bar',
+        data:{ labels:top.map(function(x){return x.name.length>14?x.name.slice(0,13)+'…':x.name;}),
+          datasets:[{label:'תרומה חודשית ₪', data:top.map(function(x){return Math.round(x.monthly);}), backgroundColor:'#7a8b6f'}]},
+        options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{ticks:{callback:function(v){return Math.round(v/1000)+'K';}}}} }
+      });
+    }
+
+    // טבלה עם עריכה
+    items.sort(function(a,z){return z.monthly-a.monthly;});
+    var html='<tr><th>מוצר</th><th class="right">מכירה</th><th class="right">עלות</th><th class="right">רווח</th><th class="right">%</th><th class="right">כמות</th><th class="right">תרומה/חודש</th></tr>';
+    items.forEach(function(x){
+      var col=x.margin>=50?'var(--green-ok)':x.margin>=25?'var(--amber)':'var(--red)';
+      html+='<tr><td style="font-weight:600">'+esc(x.name)+'</td>'+
+        '<td class="num right" style="cursor:pointer;color:var(--sage-d)" onclick="pfEdit('+x.row+',\'sell\','+x.sell+')">'+fmt(x.sell)+' ✎</td>'+
+        '<td class="num right small" style="cursor:pointer" onclick="pfEdit('+x.row+',\'cost\','+x.cost+')">'+fmt(x.cost)+' ✎</td>'+
+        '<td class="num right"><b>'+fmt(x.profit)+'</b></td>'+
+        '<td class="num right" style="font-weight:700;color:'+col+'">'+x.margin+'%</td>'+
+        '<td class="num right small" style="cursor:pointer" onclick="pfEdit('+x.row+',\'qty\','+(x.qty||0)+')">'+(x.qty||0)+' ✎</td>'+
+        '<td class="num right" style="font-weight:700">'+fmt(x.monthly)+'<div class="small">'+x.share+'%</div></td></tr>';
+    });
+    html+='<tr style="border-top:2px solid var(--sage-l);font-weight:900;background:var(--sage-l)"><td>סה״כ</td><td colspan="5"></td><td class="num right">'+fmt(totalContribution)+'</td></tr>';
+    tb.innerHTML=html;
+
+    // המלצות חכמות
+    var rec='';
+    if(losers.length) rec+='<div class="msg err">⚠️ '+losers.length+' מוצרים במחיר שלא מכסה עלות: '+esc(losers.map(function(x){return x.name;}).slice(0,3).join(', '))+' — לשקול העלאת מחיר או הפסקה.</div>';
+    if(thin.length) rec+='<div class="msg info">📉 רווחיות נמוכה (מתחת ל-25%): '+esc(thin.map(function(x){return x.name;}).slice(0,3).join(', '))+'</div>';
+    if(best && best.share>50) rec+='<div class="msg info">🎯 '+esc(best.name)+' מייצר '+best.share+'% מהרווח — תלות גבוהה במוצר אחד.</div>';
+    document.getElementById('profitNote').innerHTML=rec+'<div class="small" style="margin-top:6px">לחיצה על מחיר/עלות/כמות מאפשרת עריכה ישירה בקובץ. תרומה חודשית = רווח × כמות.</div>';
+
+    // מילוי בורר "מה אם"
+    var sel=document.getElementById('waItem');
+    if(sel){
+      var prev=sel.value;
+      sel.innerHTML=items.map(function(x){return '<option value="'+x.row+'">'+esc(x.name)+'</option>';}).join('');
+      if(prev && items.some(function(x){return String(x.row)===prev;})) sel.value=prev;
+      waLoad();
+    }
+  }).catch(function(e){ kp.innerHTML='<div class="msg err" style="grid-column:1/-1">'+esc(e.message)+'</div>'; });
+}
+
+/* ===== "מה אם" על מוצר קיים ===== */
+function waCurrent(){
+  var row=document.getElementById('waItem').value;
+  return (pfItems||[]).filter(function(x){return String(x.row)===String(row);})[0];
+}
+function waLoad(){
+  var it=waCurrent();
+  if(!it) return;
+  document.getElementById('waSell').value=it.sell;
+  document.getElementById('waCost').value=it.cost;
+  document.getElementById('waQty').value=it.qty||0;
+  waCalc();
+}
+function waCalc(){
+  var it=waCurrent();
+  if(!it) return;
+  var sell=parseFloat(document.getElementById('waSell').value)||0;
+  var cost=parseFloat(document.getElementById('waCost').value)||0;
+  var qty=parseFloat(document.getElementById('waQty').value)||0;
+  var profit=sell-cost, margin=sell>0?Math.round(profit/sell*100):0;
+  var monthly=profit*qty;
+  var oldMonthly=it.profit*(it.qty||0);
+  var diff=monthly-oldMonthly;
+  var col=margin>=50?'var(--green-ok)':margin>=25?'var(--amber)':'var(--red)';
+  document.getElementById('waResult').innerHTML=
+    '<div class="kpis" style="margin-top:8px">'+
+      '<div class="kpi"><div class="lbl">רווח ליחידה</div><div class="val" style="color:'+col+'">'+fmt(profit)+'</div><div class="small">'+margin+'% רווחיות</div></div>'+
+      '<div class="kpi"><div class="lbl">תרומה חודשית</div><div class="val">'+fmt(monthly)+'</div></div>'+
+      '<div class="kpi '+(diff>=0?'':'warn')+'"><div class="lbl">שינוי מהמצב הקיים</div><div class="val '+(diff>=0?'pos':'neg')+'">'+(diff>=0?'+':'')+fmt(diff)+'</div><div class="small">לחודש</div></div>'+
+    '</div>'+
+    (profit<=0?'<div class="msg err">⚠️ המחיר לא מכסה את העלות</div>':'')+
+    '<div class="small" style="margin-top:6px">שנתי: '+fmt(monthly*12)+' (שינוי '+(diff>=0?'+':'')+fmt(diff*12)+')</div>';
+}
+function waSave(){
+  var it=waCurrent();
+  var m=document.getElementById('waMsg');
+  if(!it){ m.innerHTML='<div class="msg err">לא נבחר מוצר</div>'; return; }
+  var b=document.getElementById('waSaveBtn'); b.disabled=true;
+  m.innerHTML='<div class="msg info">שומר… <span class="spin"></span></div>';
+  api({action:'profit_update', row:it.row,
+    sell:document.getElementById('waSell').value,
+    cost:document.getElementById('waCost').value,
+    qty:document.getElementById('waQty').value
+  }).then(function(){
+    b.disabled=false;
+    m.innerHTML='<div class="msg ok">✅ נשמר לקובץ</div>';
+    loadProfit();
+  }).catch(function(e){ b.disabled=false; m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+function waDelete(){
+  var it=waCurrent();
+  var m=document.getElementById('waMsg');
+  if(!it){ m.innerHTML='<div class="msg err">לא נבחר מוצר</div>'; return; }
+  if(!confirm('למחוק את "'+it.name+'" מגיליון הריווחיות?')) return;
+  api({action:'profit_delete', row:it.row}).then(function(r){
+    m.innerHTML='<div class="msg ok">🗑 נמחק: '+esc(r.deleted)+'</div>';
+    loadProfit();
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+function pfEdit(row, field, cur){
+  var labels={sell:'מחיר מכירה (לפני מע״מ)', cost:'עלות ספק (אחרי מע״מ)', qty:'כמות חודשית'};
+  var v=prompt(labels[field]+' ₪:', cur||'');
+  if(v===null) return;
+  var n=parseFloat(String(v).replace(/[^\d.\-]/g,''));
+  if(isNaN(n)){ alert('מספר לא תקין'); return; }
+  var params={action:'profit_update', row:row}; params[field]=n;
+  api(params).then(function(){ loadProfit(); }).catch(function(e){ alert(e.message); });
+}
+
+function pfCalc(){
+  var cost=parseFloat(document.getElementById('pfCost').value)||0;
+  var sell=parseFloat(document.getElementById('pfSell').value)||0;
+  var qty=parseFloat(document.getElementById('pfQty').value)||0;
+  var target=parseFloat(document.getElementById('pfTarget').value)||0;
+  var box=document.getElementById('pfCalcBox');
+  if(!cost && !sell){ box.innerHTML=''; return; }
+  var profit=sell-cost;
+  var margin=sell>0?Math.round(profit/sell*100):0;
+  var monthly=profit*qty;
+  // מחיר מומלץ להשגת יעד הרווחיות: sell = cost / (1 - target%)
+  var suggested = target>0 && target<100 ? cost/(1-target/100) : 0;
+  var col=margin>=50?'var(--green-ok)':margin>=25?'var(--amber)':'var(--red)';
+  var html='<div class="kpis" style="margin-top:8px">'+
+    '<div class="kpi"><div class="lbl">רווח ליחידה</div><div class="val '+(profit>=0?'pos':'neg')+'">'+fmt(profit)+'</div></div>'+
+    '<div class="kpi"><div class="lbl">רווחיות</div><div class="val" style="color:'+col+'">'+margin+'%</div></div>'+
+    (qty? '<div class="kpi gold"><div class="lbl">תרומה חודשית</div><div class="val">'+fmt(monthly)+'</div></div>':'')+
+    (suggested? '<div class="kpi"><div class="lbl">מחיר ליעד '+target+'%</div><div class="val">'+fmt(suggested)+'</div></div>':'')+
+  '</div>';
+  if(profit<0) html+='<div class="msg err">המחיר נמוך מהעלות — הפסד של '+fmt(Math.abs(profit))+' לכל יחידה.</div>';
+  else if(suggested && sell<suggested) html+='<div class="msg info">כדי להגיע ל-'+target+'% רווחיות, המחיר צריך להיות '+fmt(suggested)+' (פער של '+fmt(suggested-sell)+').</div>';
+  else if(suggested && sell>=suggested) html+='<div class="msg ok">✅ המחיר עומד ביעד הרווחיות</div>';
+  box.innerHTML=html;
+}
+
+function profitAdd(){
+  var m=document.getElementById('pfMsg');
+  var name=document.getElementById('pfName').value.trim();
+  var cost=parseFloat(document.getElementById('pfCost').value);
+  var sell=parseFloat(document.getElementById('pfSell').value);
+  var qty=parseFloat(document.getElementById('pfQty').value)||0;
+  if(!name||isNaN(cost)||isNaN(sell)){ m.innerHTML='<div class="msg err">חסר שם / עלות / מחיר</div>'; return; }
+  var btn=document.getElementById('pfAddBtn'); btn.disabled=true;
+  m.innerHTML='<div class="msg info">מוסיף… <span class="spin"></span></div>';
+  api({action:'profit_add', name:name, cost:cost, sell:sell, qty:qty}).then(function(){
+    btn.disabled=false;
+    m.innerHTML='<div class="msg ok">✅ נוסף לגיליון הריווחיות</div>';
+    document.getElementById('pfName').value=''; document.getElementById('pfCost').value='';
+    document.getElementById('pfSell').value=''; document.getElementById('pfQty').value='0';
+    document.getElementById('pfCalcBox').innerHTML='';
+    loadProfit();
+  }).catch(function(e){ btn.disabled=false; m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+function loadCashTab(){
+  var kp=document.getElementById('cfKpis'), tb=document.getElementById('cfTable');
+  kp.innerHTML='<div class="msg info" style="grid-column:1/-1">טוען תחזית… <span class="spin"></span></div>';
+  Promise.all([
+    api({action:'tazrim'}),
+    api({action:'plan_list',days:'45'}).catch(function(){ return {rows:[]}; })
+  ]).then(function(res){
+    var tz=res[0], pl=res[1];
+    var days=(tz.daily||[]).slice(0,30);
+    if(!days.length){ kp.innerHTML='<div class="msg err" style="grid-column:1/-1">אין נתוני תחזית</div>'; return; }
+    var d0=days[0];
+    var minBal=null,minDate='';
+    (tz.daily||[]).forEach(function(d){ if(minBal===null||d.balCons<minBal){minBal=d.balCons;minDate=d.date;} });
+    var realTotal=d0.poalim+d0.discount;
+    kp.innerHTML=
+      kpi('יתרה משולבת היום', realTotal, realTotal<0?'neg':'pos', realTotal<0?'warn':'')+
+      kpi('שפל צפוי · '+esc(minDate), minBal, minBal<0?'neg':'pos', minBal<0?'warn':'')+
+      '<div class="kpi gold"><div class="lbl">💳 זמין מהמסגרת</div><div class="val">'+fmt(d0.margin)+'</div></div>';
+
+    // סקאלה לפסים
+    var maxAbs=1;
+    days.forEach(function(d){ maxAbs=Math.max(maxAbs,Math.abs(d.bal)); });
+    var html='<tr><th>תאריך</th><th class="right">נכנס</th><th class="right">יוצא</th><th class="right">יתרה</th><th style="width:30%">מגמה</th></tr>';
+    days.forEach(function(d){
+      var inc=d.inSure+d.inEst;
+      var w=Math.round(Math.abs(d.bal)/maxAbs*100);
+      var col=d.bal<0?'var(--red)':'var(--green-ok)';
+      html+='<tr><td class="num">'+esc(d.date)+'</td>'+
+        '<td class="num right" style="color:var(--green-ok)">'+(inc?fmt(inc):'—')+'</td>'+
+        '<td class="num right" style="color:var(--red)">'+(d.outAmt?fmt(d.outAmt):'—')+'</td>'+
+        '<td class="num right" style="font-weight:700;color:'+col+'">'+fmt(d.bal)+'</td>'+
+        '<td><div class="bar"><i style="width:'+w+'%;background:'+col+'"></i></div></td></tr>';
+    });
+    tb.innerHTML=html;
+    renderPlanned(pl.rows||[]);
+    loadCashList();
+  }).catch(function(e){ kp.innerHTML='<div class="msg err" style="grid-column:1/-1">'+esc(e.message)+'</div>'; });
+}
+
+var plExpanded=false;
+function togglePlanned(){
+  var w=document.getElementById('plWrap'), t=document.getElementById('plToggle');
+  var hidden=w.style.display==='none';
+  w.style.display=hidden?'block':'none';
+  t.textContent=hidden?'▼':'◀';
+}
+function renderPlanned(rows){
+  var t=document.getElementById('plTable');
+  if(!rows.length){ t.innerHTML='<tr><td class="small">אין תנועות מתוכננות ב-45 הימים הקרובים</td></tr>'; return; }
+  var LIMIT=8;
+  var show=plExpanded? rows : rows.slice(0,LIMIT);
+  var totOut=rows.filter(function(r){return r.amount<0;}).reduce(function(s,r){return s+r.amount;},0);
+  var totIn=rows.filter(function(r){return r.amount>0;}).reduce(function(s,r){return s+r.amount;},0);
+  var html='<tr><th>תאריך</th><th>פירוט</th><th>חשבון</th><th class="right">סכום</th><th>ודאות</th></tr>';
+  show.forEach(function(r){
+    html+='<tr><td class="num">'+esc(r.date)+'</td><td>'+esc(r.desc)+'<div class="small">'+esc(r.category||'')+'</div></td>'+
+      '<td><span class="tag'+(r.account==='פועלים'?' y':'')+'">'+esc(r.account)+'</span></td>'+
+      '<td class="num right" style="font-weight:700;color:'+(r.amount<0?'var(--red)':'var(--green-ok)')+'">'+fmt(r.amount)+'</td>'+
+      '<td class="small">'+esc(r.certainty||'')+'</td></tr>';
+  });
+  html+='<tr style="background:var(--sage-l);font-weight:800"><td colspan="3">סה״כ '+rows.length+' תנועות</td>'+
+    '<td class="num right"><span style="color:var(--green-ok)">+'+fmt(totIn)+'</span><br><span style="color:var(--red)">'+fmt(totOut)+'</span></td><td></td></tr>';
+  t.innerHTML=html;
+  if(rows.length>LIMIT){
+    t.innerHTML+='<tr><td colspan="5" style="text-align:center;padding:8px">'+
+      '<button class="btn sec" style="padding:5px 14px;font-size:.78rem" onclick="plExpanded='+(!plExpanded)+';renderPlanned(window._plRows||[])">'+
+      (plExpanded?'▲ הצג פחות':'▼ הצג את כל '+rows.length)+'</button></td></tr>';
+  }
+  window._plRows=rows;
+}
+
+/* ===== תחזית אוטומטית ===== */
+var fcData={expenses:[],income:[]};
+function fcSuggest(){
+  var m=document.getElementById('fcMsg'), b=document.getElementById('fcBody');
+  m.innerHTML='<div class="msg info">מנתח היסטוריה… <span class="spin"></span></div>'; b.innerHTML='';
+  api({action:'fc_suggest', days:document.getElementById('fcDays').value}).then(function(r){
+    fcData=r;
+    var all=(r.expenses||[]).concat(r.income||[]);
+    if(!all.length){ m.innerHTML='<div class="msg info">לא נמצאו דפוסים חוזרים חדשים. ייתכן שהתחזית כבר מכסה את התקופה.</div>'; return; }
+    m.innerHTML='<div class="kpis">'+
+      kpi('הוצאות צפויות', r.totalExpense,'','warn')+
+      kpi('הכנסות צפויות', r.totalIncome,'pos','')+
+      '<div class="kpi '+((r.totalIncome-r.totalExpense)>=0?'':'warn')+'"><div class="lbl">מאזן צפוי</div><div class="val '+((r.totalIncome-r.totalExpense)>=0?'pos':'neg')+'">'+fmt(r.totalIncome-r.totalExpense)+'</div></div>'+
+    '</div>';
+    var html='<div class="small" style="margin:10px 0 4px">סמנו מה להוסיף לתחזית. ביטחון = עד כמה הדפוס עקבי בהיסטוריה.</div>';
+    if(r.expenseSource) html+='<div class="msg ok small">📊 מקור ההוצאות: '+esc(r.expenseSource)+
+      (r.expenseSource.indexOf('עו')!==-1?' — עסקאות אשראי בודדות לא נספרות, רק החיוב החודשי המרוכז.':'')+'</div>';
+    if(r.incomeMeta){
+      var im=r.incomeMeta, sc=r.schedule||{};
+      var dows=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+      html+='<div class="msg info small">💰 הכנסות: '+fmt(im.weeklyTotal)+' לשבוע · '+fmt(im.monthlyTotal)+' לחודש.<br>'+
+        'סליקה שבועית ביום '+esc(dows[sc.weeklyDay]||'חמישי')+': '+fmt(im.venueWeekly)+
+        (im.siteMonthly? ' · אתר: '+fmt(im.siteMonthly)+' לחודש בימים '+(sc.siteDays||[]).join(', ') :
+          ' · <b>לא הוגדרו הכנסות אתר</b> — עדכנו ב-⚙️ לוח קבלת הכנסות')+'</div>';
+    }
+    html+='<div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">'+
+      '<button class="btn sec" onclick="fcToggleAll(true)">סמן הכל</button>'+
+      '<button class="btn sec" onclick="fcToggleAll(false)">נקה</button></div>';
+    html+='<div style="overflow-x:auto"><table id="fcTable"><tr><th>✔</th><th>תאריך</th><th>פירוט</th><th class="right">סכום</th><th>ביטחון</th></tr>';
+    all.forEach(function(x,i){
+      var isInc=x.kind==='הכנסה';
+      var conf=x.confidence||50;
+      var ccol=conf>=75?'var(--green-ok)':conf>=55?'var(--amber)':'var(--red)';
+      html+='<tr><td><input type="checkbox" class="fcChk" data-i="'+i+'" '+(conf>=55?'checked':'')+'></td>'+
+        '<td class="num small">'+esc(x.date)+'</td>'+
+        '<td>'+esc(x.desc)+'<div class="small">'+esc(x.category||'')+(x.months?' · '+x.months+' חודשים':'')+'</div></td>'+
+        '<td class="num right" style="font-weight:700;color:'+(isInc?'var(--green-ok)':'var(--red)')+'">'+(isInc?'+':'−')+fmt(x.amount)+'</td>'+
+        '<td class="small" style="color:'+ccol+';font-weight:700">'+conf+'%</td></tr>';
+    });
+    html+='</table></div>';
+    html+='<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+      '<button class="btn" id="fcApplyBtn" onclick="fcApply()">✅ הוספה לתחזית</button>'+
+      '<button class="btn sec danger" onclick="fcClear()">🗑 ניקוי תחזיות אוטומטיות קודמות</button></div>';
+    html+='<div id="fcApplyMsg"></div>';
+    b.innerHTML=html;
+    fcAll=all;
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+var fcAll=[];
+function fcToggleAll(v){
+  document.querySelectorAll('.fcChk').forEach(function(c){ c.checked=v; });
+}
+function fcApply(){
+  var sel=[];
+  document.querySelectorAll('.fcChk').forEach(function(c){ if(c.checked) sel.push(fcAll[+c.dataset.i]); });
+  var m=document.getElementById('fcApplyMsg');
+  if(!sel.length){ m.innerHTML='<div class="msg err">לא נבחרו שורות</div>'; return; }
+  var b=document.getElementById('fcApplyBtn'); b.disabled=true;
+  m.innerHTML='<div class="msg info">מוסיף… <span class="spin"></span></div>';
+  var added=0;
+  var chunks=[]; for(var i=0;i<sel.length;i+=8) chunks.push(sel.slice(i,i+8));
+  chunks.reduce(function(p,ch){
+    return p.then(function(){
+      return api({action:'fc_apply', rows:JSON.stringify(ch)}).then(function(r){ added+=r.added; });
+    });
+  },Promise.resolve()).then(function(){
+    b.disabled=false;
+    m.innerHTML='<div class="msg ok">✅ נוספו '+added+' תנועות לתחזית. התחזית היומית תתעדכן לפי הנוסחאות בקובץ.</div>';
+    loadCashTab();
+  }).catch(function(e){ b.disabled=false; m.innerHTML='<div class="msg err">'+esc(e.message)+' (נוספו '+added+')</div>'; });
+}
+function fcClear(){
+  if(!confirm('למחוק את כל התחזיות האוטומטיות העתידיות?\n(תנועות שהזנתם ידנית לא ייפגעו)')) return;
+  var m=document.getElementById('fcApplyMsg');
+  m.innerHTML='<div class="msg info">מנקה… <span class="spin"></span></div>';
+  api({action:'fc_clear'}).then(function(r){
+    m.innerHTML='<div class="msg ok">🗑 הוסרו '+r.removed+' שורות</div>';
+    loadCashTab();
+  }).catch(function(e){ m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+/* ===== תנועות בפועל שנקלטו ===== */
+function loadCashList(){
+  var t=document.getElementById('cashListTable');
+  t.innerHTML='<tr><td><span class="spin"></span></td></tr>';
+  api({action:'cash_list'}).then(function(r){
+    if(!r.rows.length){ t.innerHTML='<tr><td class="small">עדיין לא נקלטו תנועות בפועל</td></tr>'; return; }
+    var pend=r.rows.filter(function(x){return x.inBudget!=='כן' && x.amount<0;}).length;
+    var html='<tr><th>תאריך</th><th>חשבון</th><th>תיאור</th><th class="right">סכום</th><th>סוג</th><th>בתקציב</th></tr>';
+    r.rows.forEach(function(x){
+      html+='<tr><td class="num small">'+esc(x.date)+'</td>'+
+        '<td><span class="tag'+(x.account==='פועלים'?' y':'')+'">'+esc(x.account)+'</span></td>'+
+        '<td>'+esc(x.desc)+'</td>'+
+        '<td class="num right" style="font-weight:700;color:'+(x.amount<0?'var(--red)':'var(--green-ok)')+'">'+fmt(x.amount)+'</td>'+
+        '<td class="small">'+esc(x.type)+'</td>'+
+        '<td>'+(x.inBudget==='כן'?'<span class="tag">✓</span>':(x.amount<0?'<span class="tag dup">חסר</span>':'<span class="small">—</span>'))+'</td></tr>';
+    });
+    t.innerHTML=html;
+    document.getElementById('c2bMsg').innerHTML= pend
+      ? '<div class="msg info small">'+pend+' תנועות הוצאה עדיין לא נספרו בתקציב. חיובי אשראי והלוואות לא מועברים בכוונה (הפירוט שלהם נכנס בנפרד).</div>'
+      : '<div class="msg ok small">✅ כל תנועות ההוצאה נספרו גם בתקציב</div>';
+  }).catch(function(e){ t.innerHTML='<tr><td class="msg err">'+esc(e.message)+'</td></tr>'; });
+}
+function cashToBudget(){
+  var m=document.getElementById('c2bMsg');
+  if(!confirm('להעביר ליומן ההוצאות את כל תנועות ההוצאה שעדיין לא נספרו בתקציב?\n(חיובי אשראי והלוואות לא יועברו — הפירוט שלהם נכנס בנפרד)')) return;
+  var b=document.getElementById('c2bBtn'); b.disabled=true;
+  m.innerHTML='<div class="msg info">מעביר… <span class="spin"></span></div>';
+  api({action:'cash_to_budget'}).then(function(r){
+    b.disabled=false;
+    m.innerHTML= r.moved
+      ? '<div class="msg ok">✅ הועברו '+r.moved+' תנועות ליומן ההוצאות'+(r.skipped?' ('+r.skipped+' כבר היו קיימות)':'')+'.<br>אם חלקן ללא סעיף — השלימו בטאב 📊 תקציב → "השלמת סיווג".</div>'
+      : '<div class="msg info">'+esc(r.note||'אין תנועות להעברה')+'</div>';
+    // איפוס הרשימה וטעינה מחדש כדי לשקף את המצב החדש
+    document.getElementById('cashListTable').innerHTML='';
+    insLoaded=false; bgCache=null;
+    loadCashList();
+  }).catch(function(e){ b.disabled=false; m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+function planAdd(){
+  var m=document.getElementById('plMsg');
+  var d=document.getElementById('plDate').value, a=parseFloat(document.getElementById('plAmt').value);
+  var desc=document.getElementById('plDesc').value.trim();
+  if(!d||!a||!desc){ m.innerHTML='<div class="msg err">חסר תאריך / סכום / פירוט</div>'; return; }
+  var btn=document.getElementById('plBtn'); btn.disabled=true;
+  m.innerHTML='<div class="msg info">מוסיף לתחזית… <span class="spin"></span></div>';
+  api({action:'plan_add', date:ddmmyyyy(d), kind:document.getElementById('plKind').value,
+    desc:desc, amount:a, account:document.getElementById('plAcc').value,
+    branch:document.getElementById('plBranch').value, certainty:document.getElementById('plCert').value
+  }).then(function(){
+    btn.disabled=false;
+    m.innerHTML='<div class="msg ok">✅ נוסף לתחזית התנועות — התחזית היומית תתעדכן לפי הנוסחאות בקובץ</div>';
+    document.getElementById('plAmt').value=''; document.getElementById('plDesc').value='';
+    loadCashTab();
+  }).catch(function(e){ btn.disabled=false; m.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+/* ================= תקציב מול ביצוע ================= */
+var bgCache=null;
+function loadInsights(){
+  var m=document.getElementById('insMonth').value||curMonth();
+  document.getElementById('insMonthLbl').textContent=heMonth(m);
+  var body=document.getElementById('insBody');
+  body.innerHTML='<div class="msg info">טוען… <span class="spin"></span></div>';
+  api({action:'budget', month:m}).then(function(b){
+    bgCache=b;
+    renderBudget();
+  }).catch(function(e){ body.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+function renderBudget(){
+  if(!bgCache) return;
+  var b=bgCache, br=document.getElementById('insBranch').value;
+  var body=document.getElementById('insBody');
+  // איסוף פריטים לפי סניף
+  var items=Object.keys(b.budget).map(function(k){
+    var it=b.budget[k], bud,act;
+    if(br==='rishon'){ bud=it.budgetR; act=it.actualR; }
+    else if(br==='yavne'){ bud=it.budgetY; act=it.actualY; }
+    else { bud=it.budgetR+it.budgetY; act=it.actualR+it.actualY; }
+    return {name:k, bud:bud, act:act, bal:bud-act};
+  }).filter(function(x){return x.bud>0||x.act>0;});
+
+  var tB=items.reduce(function(s,x){return s+x.bud;},0);
+  var tA=items.reduce(function(s,x){return s+x.act;},0);
+  var tBal=tB-tA, pct=tB>0?Math.round(tA/tB*100):0;
+
+  // הכנסות (מהטבלה היומית — לפי סניף אם נבחר)
+  var inc;
+  if(br==='rishon') inc=b.revenue.rishon||0;
+  else if(br==='yavne') inc=b.revenue.yavne||0;
+  else inc=b.revenue.gross;
+  var bal=inc-tA, cov=tA>0?Math.round(inc/tA*100):0;
+
+  var html='';
+  // הכנסות מול הוצאות
+  html+='<div class="card" style="box-shadow:none;padding:0;margin-bottom:12px"><h2 style="font-size:.95rem">💰 הכנסות מול הוצאות</h2>'+
+    '<div class="kpis">'+
+      kpi('הכנסות', inc,'pos','')+
+      kpi('הוצאות (כולל מע״מ)', tA,'','gold')+
+      '<div class="kpi"><div class="lbl">מאזן הכנסות−הוצאות</div><div class="val '+(bal>=0?'pos':'neg')+'">'+fmt(Math.abs(bal))+'</div><div class="small">'+(bal>=0?'עודף':'גירעון')+'</div></div>'+
+      '<div class="kpi '+(cov>=100?'':(cov>=85?'gold':'warn'))+'"><div class="lbl">כיסוי הוצאות</div><div class="val '+(cov>=100?'pos':'')+'">'+cov+'%</div><div class="small">הכנסות ÷ הוצאות</div></div>'+
+    '</div></div>';
+
+  // KPI תקציב + הערכת חריגה לסוף החודש
+  var selMonth=document.getElementById('insMonth').value||curMonth();
+  var isCurrent=(selMonth===curMonth());
+  var proj=null;
+  if(isCurrent){
+    var now=new Date();
+    var dayOfMonth=now.getDate();
+    var daysInMonth=new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    if(dayOfMonth>=3 && tA>0){
+      var projActual=Math.round(tA/dayOfMonth*daysInMonth);
+      proj={actual:projActual, over:projActual-tB, day:dayOfMonth, days:daysInMonth};
+    }
+  }
+  html+='<div class="kpis" style="margin-bottom:8px">'+
+    kpi('תקציב', tB,'','')+
+    '<div class="kpi"><div class="lbl">בפועל</div><div class="val">'+fmt(tA)+'</div><div class="small">'+pct+'% נוצל</div></div>'+
+    '<div class="kpi '+(tBal>=0?'':'warn')+'"><div class="lbl">מאזן תקציב</div><div class="val '+(tBal>=0?'pos':'neg')+'">'+fmt(Math.abs(tBal))+'</div><div class="small">'+(tBal>=0?'בתקציב':'חריגה')+'</div></div>'+
+    (proj? '<div class="kpi '+(proj.over>0?'warn':'')+'"><div class="lbl">צפי לסוף החודש</div><div class="val '+(proj.over>0?'neg':'pos')+'">'+fmt(proj.actual)+'</div>'+
+      '<div class="small">'+(proj.over>0? '⚠️ חריגה צפויה '+fmt(proj.over) : '✓ צפוי להישאר בתקציב')+'</div></div>' : '')+
+  '</div>';
+  if(proj && proj.over>0){
+    html+='<div class="msg err">📈 בקצב הנוכחי ('+fmt(Math.round(tA/proj.day))+' ליום, יום '+proj.day+' מתוך '+proj.days+') ההוצאות יגיעו ל-<b>'+fmt(proj.actual)+'</b> — חריגה של <b>'+fmt(proj.over)+'</b> מהתקציב.</div>';
+  }
+
+  // קטגוריות שכבר חרגו או צפויות לחרוג
+  var overCats=items.filter(function(x){return x.bud>0 && x.act>x.bud;});
+  var underCats=items.filter(function(x){return x.bud>0 && x.act<x.bud;});
+  var sumOverrun=overCats.reduce(function(s,x){return s+(x.act-x.bud);},0);
+  var sumUnused=underCats.reduce(function(s,x){return s+(x.bud-x.act);},0);
+  var noBudgetSpend=items.filter(function(x){return !x.bud && x.act>0;}).reduce(function(s,x){return s+x.act;},0);
+  // תרחיש: כל סעיף שטרם מוצה יגיע בדיוק לתקציבו, והחריגות נשארות
+  var fullSpend=tB+sumOverrun+noBudgetSpend;
+
+  html+='<div class="card" style="box-shadow:none;padding:12px;margin:10px 0;background:'+(sumOverrun>0?'var(--red-l)':'var(--sage-l)')+'">'+
+    '<div class="disp" style="font-size:1rem;margin-bottom:8px">⚠️ חריגה מצטברת</div>'+
+    '<div class="kpis">'+
+      '<div class="kpi" style="background:#fff"><div class="lbl">חורג עכשיו</div>'+
+        '<div class="val '+(sumOverrun>0?'neg':'pos')+'">'+fmt(sumOverrun)+'</div>'+
+        '<div class="small">'+overCats.length+' סעיפים מעל התקציב</div></div>'+
+      '<div class="kpi" style="background:#fff"><div class="lbl">יתרה לא מנוצלת</div>'+
+        '<div class="val">'+fmt(sumUnused)+'</div>'+
+        '<div class="small">'+underCats.length+' סעיפים מתחת</div></div>'+
+      '<div class="kpi" style="background:#fff"><div class="lbl">אם ינוצל כל התקציב</div>'+
+        '<div class="val">'+fmt(fullSpend)+'</div>'+
+        '<div class="small">מול תקציב '+fmt(tB)+'</div></div>'+
+      '<div class="kpi" style="background:#fff"><div class="lbl">חריגה סופית בתרחיש זה</div>'+
+        '<div class="val '+((fullSpend-tB)>0?'neg':'pos')+'">'+fmt(fullSpend-tB)+'</div>'+
+        '<div class="small">'+(tB>0?Math.round(fullSpend/tB*100)+'% מהתקציב':'')+'</div></div>'+
+    '</div>'+
+    '<div class="small" style="margin-top:8px">'+
+      (sumOverrun>0
+        ? 'גם אם כל שאר הסעיפים ייעצרו בדיוק בתקציב, תסיים בחריגה של <b>'+fmt(fullSpend-tB)+'</b>.'+
+          (sumUnused>sumOverrun? ' היתרה הלא מנוצלת ('+fmt(sumUnused)+') מכסה את החריגה — אבל רק אם לא תנוצל.':'')
+        : 'אין סעיפים בחריגה כרגע.')+
+      (noBudgetSpend>0? '<br>כולל '+fmt(noBudgetSpend)+' בסעיפים ללא תקציב מוגדר.':'')+
+    '</div>'+
+  '</div>';
+
+  var willOver=isCurrent&&proj? items.filter(function(x){
+    return x.bud>0 && x.act<=x.bud && (x.act/proj.day*proj.days)>x.bud;
+  }) : [];
+  if(overCats.length||willOver.length){
+    var parts=[];
+    if(overCats.length) parts.push('<b>חרגו כבר:</b> '+overCats.slice(0,4).map(function(x){return esc(x.name)+' ('+fmt(x.act-x.bud)+'−)';}).join(' · '));
+    if(willOver.length) parts.push('<b>צפויות לחרוג:</b> '+willOver.slice(0,4).map(function(x){return esc(x.name);}).join(' · '));
+    html+='<div class="msg info small">'+parts.join('<br>')+'</div>';
+  }
+
+  // התראת מע״מ
+  var vatItem=items.filter(function(x){return x.name.indexOf('מע"מ')!==-1||x.name.indexOf('מעמ')!==-1;})[0];
+  if(vatItem && vatItem.bud>0){
+    var miss=vatItem.bud-vatItem.act;
+    html+= miss>0? '<div class="msg info">⚠️ החזרי מע״מ חסרים: '+fmt(miss)+'</div>'
+                 : '<div class="msg ok">✅ החזרי מע״מ התקבלו</div>';
+  }
+
+  // טבלת קטגוריות
+  items.sort(function(a,z){return z.act-a.act;});
+  var edit=document.getElementById('bgEditMode') && document.getElementById('bgEditMode').checked;
+  var brParam=br;
+  html+='<table><tr><th>קטגוריה</th><th class="right">תקציב</th><th class="right">בפועל</th><th class="right">מאזן</th><th style="width:28%">ניצול</th></tr>';
+  items.forEach(function(x){
+    var p=x.bud>0?Math.round(x.act/x.bud*100):(x.act>0?999:0);
+    var ov=x.bal<0;
+    var col=ov?'var(--red)':p>90?'var(--amber)':'var(--sage)';
+    var budCell=edit
+      ? '<td class="num right small" style="cursor:pointer;color:var(--sage-d);font-weight:700" onclick="editBudget(\''+esc(x.name).replace(/\x27/g,"\\\x27")+'\',\''+brParam+'\','+x.bud+')">'+fmt(x.bud)+' ✎</td>'
+      : '<td class="num right small">'+fmt(x.bud)+'</td>';
+    html+='<tr><td style="font-weight:600;cursor:pointer;color:var(--sage-d)" onclick="showCatDetail(\''+esc(x.name).replace(/'/g,"\\'")+'\')">'+esc(x.name)+' 🔍</td>'+
+      budCell+
+      '<td class="num right"><b>'+fmt(x.act)+'</b></td>'+
+      '<td class="num right" style="color:'+(ov?'var(--red)':'var(--green-ok)')+';font-weight:700">'+(ov?'−':'')+fmt(Math.abs(x.bal))+'</td>'+
+      '<td><div class="small">'+(p===999?'ללא תקציב':p+'%')+'</div><div class="bar"><i style="width:'+Math.min(100,p)+'%;background:'+col+'"></i></div></td></tr>';
+  });
+  html+='<tr style="border-top:2px solid var(--sage-l);font-weight:900;background:var(--sage-l)"><td>סה״כ</td><td class="num right">'+fmt(tB)+'</td><td class="num right">'+fmt(tA)+'</td><td class="num right" style="color:'+(tBal<0?'var(--red)':'var(--green-ok)')+'">'+(tBal<0?'−':'')+fmt(Math.abs(tBal))+'</td><td class="num" style="text-align:center">'+pct+'%</td></tr>';
+  html+='</table>';
+
+  if(b.unmapped>0) html+='<div class="msg info" style="margin-top:8px">🏷️ <b>'+fmt(b.unmapped)+'</b> בתנועות ללא סעיף תקציב — הן ביומן אבל לא מופיעות בטבלה למעלה.<br>'+
+    '<button class="btn amber" style="margin-top:8px" onclick="loadUncat()">🔧 השלמת סיווג</button></div>'+
+    '<div id="uncatBox"></div>';
+  html+='<div id="catDetailBox"></div>';
+  body.innerHTML=html;
+}
+
+function shiftMonth(m,n){
+  var p=String(m).split('-');
+  var d=new Date(+p[0], +p[1]-1+n, 1);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+function moveMonth(row,month){
+  if(!month) return;
+  api({action:'attrib_set', row:row, month:month}).then(function(){
+    var tr=document.getElementById('cd'+row);
+    if(tr){ tr.style.background='var(--sage-l)'; tr.style.opacity='.5'; }
+    bgCache=null;
+  }).catch(function(e){ alert(e.message); });
+}
+
+/* ===== פירוט הוצאות לפי קטגוריה ===== */
+function showCatDetail(cat){
+  var m=document.getElementById('insMonth').value||curMonth();
+  var br=document.getElementById('insBranch').value;
+  var box=document.getElementById('catDetailBox');
+  if(!box) return;
+  box.innerHTML='<div class="msg info">טוען… <span class="spin"></span></div>';
+  api({action:'cat_detail', month:m, category:cat, branch:br}).then(function(r){
+    if(!r.rows.length){ box.innerHTML='<div class="msg info">אין תנועות תחת "'+esc(cat)+'" בחודש זה</div>'; return; }
+    var h='<div class="card" style="box-shadow:none;padding:10px;margin-top:10px;background:var(--sage-l)">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px">'+
+      '<b>🔍 '+esc(cat)+' — '+r.count+' תנועות · '+fmt(r.total)+'</b>'+
+      '<button class="btn sec" style="padding:4px 10px;font-size:.75rem" onclick="document.getElementById(\'catDetailBox\').innerHTML=\'\'">✕ סגור</button></div>'+
+      '<div style="overflow-x:auto"><table style="font-size:.78rem"><tr><th>תאריך</th><th>ספק</th><th class="right">סכום</th><th>סניף</th><th>שייך לחודש</th></tr>';
+    r.rows.forEach(function(x){
+      h+='<tr id="cd'+x.row+'"><td class="num small">'+esc(x.date)+'</td><td>'+esc(x.desc)+'</td>'+
+        '<td class="num right"><b>'+fmt(x.amount)+'</b></td>'+
+        '<td><span class="tag'+(String(x.branch).indexOf('יבנה')!==-1?' y':'')+'">'+esc(x.branch)+'</span></td>'+
+        '<td><select onchange="moveMonth('+x.row+',this.value)" style="font-size:.72rem;padding:3px 4px">'+
+          '<option value="">— העבר —</option>'+
+          '<option value="'+shiftMonth(m,-1)+'">← '+heMonth(shiftMonth(m,-1))+'</option>'+
+          '<option value="'+shiftMonth(m,1)+'">→ '+heMonth(shiftMonth(m,1))+'</option>'+
+        '</select></td></tr>';
+    });
+    h+='</table></div>'+(r.count>r.rows.length?'<div class="small">מוצגות '+r.rows.length+' מתוך '+r.count+'</div>':'')+'</div>';
+    box.innerHTML=h;
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }).catch(function(e){ box.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+
+/* ===== השלמת סיווג לתנועות ללא סעיף ===== */
+function loadUncat(){
+  var box=document.getElementById('uncatBox');
+  var m=document.getElementById('insMonth').value||curMonth();
+  box.innerHTML='<div class="msg info">טוען… <span class="spin"></span></div>';
+  api({action:'uncat_list', month:m}).then(function(r){
+    if(!r.rows.length){ box.innerHTML='<div class="msg ok">✅ כל התנועות מסווגות</div>'; return; }
+    var catOpts='<option value="">— בחר סעיף —</option>'+(META.categories||[]).map(function(c){return '<option>'+esc(c)+'</option>';}).join('');
+    var html='<div class="card" style="box-shadow:none;padding:0;margin-top:10px"><h2 style="font-size:.95rem">🔧 '+r.total+' תנועות ללא סיווג</h2>'+
+      '<div class="small" style="margin-bottom:6px">בחירת סעיף שומרת מיד לקובץ. הספק ייזכר להבא אוטומטית.</div>'+
+      '<div style="overflow-x:auto"><table><tr><th>תאריך</th><th>תיאור</th><th class="right">סכום</th><th>סניף</th><th>סעיף</th></tr>';
+    r.rows.forEach(function(x){
+      html+='<tr id="uc'+x.row+'"><td class="num small">'+esc(x.date)+'</td>'+
+        '<td>'+esc(x.desc)+'</td>'+
+        '<td class="num right"><b>'+fmt(x.amount)+'</b></td>'+
+        '<td><select id="ucb'+x.row+'">'+['ראשון לציון','יבנה'].map(function(bb){return '<option '+(String(x.branch).indexOf(bb.slice(0,4))!==-1?'selected':'')+'>'+bb+'</option>';}).join('')+'</select></td>'+
+        '<td><select onchange="uncatSet('+x.row+',this.value)">'+catOpts+'</select></td></tr>';
+    });
+    html+='</table></div><div id="ucDone"></div></div>';
+    box.innerHTML=html;
+    ucDone=0;
+  }).catch(function(e){ box.innerHTML='<div class="msg err">'+esc(e.message)+'</div>'; });
+}
+function uncatSet(row,cat){
+  if(!cat) return;
+  var tr=document.getElementById('uc'+row);
+  var br=document.getElementById('ucb'+row);
+  api({action:'uncat_set', row:row, category:cat, branch:br?br.value:''}).then(function(){
+    if(tr){ tr.style.background='var(--sage-l)'; tr.style.opacity='.55'; }
+    ucDone++;
+    var n=document.getElementById('ucDone');
+    if(n) n.innerHTML='<div class="msg ok">✅ סווגו '+ucDone+' תנועות. <button class="btn sec" style="padding:6px 12px" onclick="loadInsights()">רענון התקציב</button></div>';
+  }).catch(function(e){ alert(e.message); });
+}
+var ucDone=0;
+function editBudget(category,branch,cur){
+  var m=document.getElementById('insMonth').value||curMonth();
+  var brLbl = branch==='yavne'?'יבנה' : branch==='rishon'?'ראשון לציון' : 'מאוחד';
+  var v=prompt('תקציב ל"'+category+'" ('+brLbl+') — '+heMonth(m)+'\n₪:', cur||'');
+  if(v===null) return;
+  var n=parseFloat(String(v).replace(/[^\d.\-]/g,''));
+  if(isNaN(n)){ alert('מספר לא תקין'); return; }
+  var allMonths=confirm('להחיל על כל החודשים?\n\nאישור = שינוי קבוע בקובץ התקציב\nביטול = רק לחודש '+heMonth(m));
+  api({action:'set_budget', category:category, branch:branch, value:n,
+       month:m, scope: allMonths?'all':'month'}).then(function(r){
+    bgCache=null; loadInsights();
+  }).catch(function(e){ alert(e.message); });
+}
+
+/* ================= אתחול ================= */
+document.getElementById('mDate').value=todayISO();
+document.getElementById('plDate').value=todayISO();
+document.getElementById('insMonth').value=curMonth();
+document.getElementById('beMonth').value=curMonth();
+buildVatPeriods();
+if(apiUrl()){
+  loadMeta().then(loadHome).catch(function(e){
+    document.getElementById('homeLoad').innerHTML='<div class="msg err">'+esc(e.message)+'</div>';
+  });
+} else {
+  document.getElementById('homeLoad').innerHTML='<div class="msg info">ברוך הבא! לחצו ⚙️ והדביקו את כתובת ה-Web App של הסקריפט כדי להתחיל.</div>';
+}
+</script>
+</body>
+</html>

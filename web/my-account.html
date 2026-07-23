@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>גאיהלנד · האזור שלי</title>
+<meta name="theme-color" content="#7C8B5E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="גאיהלנד">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Suez+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sage:#7C8B5E; --sage-deep:#5E6B45; --amber:#C89B4A; --taupe:#B0A08B;
+  --cream:#FAF6EE; --sand:#D5C59C; --ink:#3A3730; --muted:#8A8375;
+  --line:#E4DDCD; --white:#fff; --coral:#C0796B; --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Assistant',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+h1,h2,h3{font-family:'Suez One',serif;font-weight:400;line-height:1.25}
+.wrap{max-width:640px;margin:0 auto;padding:0 18px}
+.top{background:linear-gradient(135deg,var(--sage),var(--sage-deep));color:#fff;padding:26px 0 22px;text-align:center}
+.top .logo{font-size:34px}
+.top h1{color:#fff;font-size:1.5rem;margin-top:4px}
+.top p{opacity:.9;font-size:.95rem}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin:16px 0;box-shadow:0 4px 16px rgba(60,58,52,.05)}
+.btn{display:block;width:100%;background:var(--sage);color:#fff;border:0;border-radius:999px;padding:15px;font:inherit;font-weight:700;font-size:1.05rem;cursor:pointer;transition:.18s;min-height:52px}
+.btn:hover{background:var(--sage-deep)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-amber{background:var(--amber)}.btn-amber:hover{filter:brightness(.94)}
+label{display:block;font-size:.9rem;color:var(--taupe);font-weight:600;margin-bottom:6px}
+input{width:100%;padding:14px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:1.05rem;text-align:center;letter-spacing:2px;background:var(--cream)}
+input:focus{outline:0;border-color:var(--sage);box-shadow:0 0 0 3px rgba(124,139,94,.12)}
+.msg{font-size:.9rem;margin-top:10px;text-align:center;min-height:20px}
+.msg.err{color:var(--coral)}.msg.ok{color:var(--sage-deep)}
+.hide{display:none}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+.stat{background:var(--cream);border-radius:14px;padding:14px;text-align:center}
+.stat .n{font-size:1.8rem;font-weight:700;color:var(--sage-deep);font-family:'Suez One',serif}
+.stat .l{font-size:.82rem;color:var(--muted);font-weight:600}
+.bk{border:1px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.bk.up{border-inline-start:4px solid var(--sage)}
+.bk .d{font-weight:700}
+.bk .sub{font-size:.85rem;color:var(--muted)}
+.bk .br{font-size:.8rem;background:var(--cream);padding:3px 10px;border-radius:20px;color:var(--taupe);font-weight:600;white-space:nowrap}
+.sec-title{font-size:1.1rem;margin:20px 0 10px;color:var(--sage-deep)}
+.empty{color:var(--muted);font-size:.9rem;text-align:center;padding:14px}
+.foot{text-align:center;padding:24px 0;color:var(--muted);font-size:.85rem}
+.link{color:var(--sage);cursor:pointer;text-decoration:underline;background:none;border:0;font:inherit}
+.pill{display:inline-block;background:#EAF0E2;color:var(--sage-deep);font-size:.78rem;font-weight:700;padding:3px 10px;border-radius:20px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo">🌿</div>
+  <h1>האזור שלי</h1>
+  <p>ההזמנות, הכרטיסייה והשוברים שלכם</p>
+</div>
+
+<div class="wrap">
+
+  <!-- שלב 1: טלפון -->
+  <div class="card" id="step-phone">
+    <label for="phone">מספר הטלפון שלכם</label>
+    <input type="tel" id="phone" placeholder="050-0000000" inputmode="tel" autocomplete="tel">
+    <div class="msg" id="phone-msg"></div>
+    <button class="btn" id="phone-btn" onclick="requestCode()">קבלת קוד כניסה</button>
+    <p style="font-size:.82rem;color:var(--muted);text-align:center;margin-top:10px">נשלח לכם קוד קצר לוואטסאפ לאימות</p>
+  </div>
+
+  <!-- שלב 2: קוד -->
+  <div class="card hide" id="step-code">
+    <label for="code">הזינו את הקוד שקיבלתם</label>
+    <input type="tel" id="code" placeholder="0000" inputmode="numeric" maxlength="4" autocomplete="one-time-code">
+    <div class="msg" id="code-msg"></div>
+    <button class="btn" id="code-btn" onclick="verifyCode()">כניסה</button>
+    <button class="link" style="display:block;margin:12px auto 0" onclick="backToPhone()">‹ מספר אחר</button>
+  </div>
+
+  <!-- האזור האישי -->
+  <div class="hide" id="area">
+    <div class="card">
+      <div class="stat-row">
+        <div class="stat"><div class="n" id="st-punch">—</div><div class="l">כניסות בכרטיסייה</div></div>
+        <div class="stat"><div class="n" id="st-visits">—</div><div class="l">ביקורים אצלנו</div></div>
+      </div>
+    </div>
+
+    <h3 class="sec-title">🗓 ההזמנות הקרובות</h3>
+    <div id="upcoming"></div>
+
+    <h3 class="sec-title">📖 היסטוריה</h3>
+    <div id="past"></div>
+
+    <div class="foot">
+      <button class="link" onclick="logout()">יציאה</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API='https://gayaland.co.il/wp-json/gayaland/v1';
+const LS='gyl_my';
+let PHONE='';
+
+const $=id=>document.getElementById(id);
+const brLabel=k=>k==='rishon'?'ראשון לציון':k==='yavne'?'יבנה':(k||'');
+
+function show(id){$(id).classList.remove('hide');}
+function hide(id){$(id).classList.add('hide');}
+
+async function requestCode(){
+  const raw=$('phone').value.trim();
+  const m=$('phone-msg'); m.className='msg'; m.textContent='';
+  if(raw.replace(/\D/g,'').length<9){m.className='msg err';m.textContent='מספר טלפון לא תקין';return;}
+  const btn=$('phone-btn'); btn.disabled=true; btn.textContent='שולח…';
+  try{
+    const r=await fetch(API+'/my/request-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:raw})});
+    const d=await r.json();
+    btn.disabled=false; btn.textContent='קבלת קוד כניסה';
+    if(!r.ok||!d.ok){m.className='msg err';m.textContent=(d.message||'שגיאה, נסו שוב');return;}
+    PHONE=raw;
+    if(!d.has_data){ m.className='msg'; }
+    // אם אין שליחה אוטומטית — פותחים וואטסאפ עם הקוד להורה עצמו (fallback)
+    if(!d.sent && d.wa_link){ window.open(d.wa_link,'_blank'); }
+    hide('step-phone'); show('step-code'); $('code').focus();
+  }catch(e){ btn.disabled=false; btn.textContent='קבלת קוד כניסה'; m.className='msg err'; m.textContent='שגיאת חיבור, נסו שוב'; }
+}
+
+async function verifyCode(){
+  const code=$('code').value.trim();
+  const m=$('code-msg'); m.className='msg'; m.textContent='';
+  if(code.length<4){m.className='msg err';m.textContent='הזינו קוד בן 4 ספרות';return;}
+  const btn=$('code-btn'); btn.disabled=true; btn.textContent='בודק…';
+  try{
+    const r=await fetch(API+'/my/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone:PHONE,code:code})});
+    const d=await r.json();
+    btn.disabled=false; btn.textContent='כניסה';
+    if(!r.ok||!d.ok){m.className='msg err';m.textContent=(d.message||'קוד שגוי');return;}
+    try{localStorage.setItem(LS,JSON.stringify({phone:d.phone,token:d.token}));}catch(e){}
+    render(d);
+  }catch(e){ btn.disabled=false; btn.textContent='כניסה'; m.className='msg err'; m.textContent='שגיאת חיבור, נסו שוב'; }
+}
+
+function backToPhone(){ hide('step-code'); show('step-phone'); $('code').value=''; }
+
+function bkRow(b,upcoming){
+  const dt=b.slot_date+(b.slot_start?(' · '+String(b.slot_start).slice(0,5)):'');
+  const kids=(b.children?(b.children+' ילדים'):'');
+  const paid=(+b.nayax_ok===1||b.status==='confirmed'||b.status==='checked_in');
+  return '<div class="bk'+(upcoming?' up':'')+'">'+
+    '<div><div class="d">'+dt+'</div><div class="sub">'+kids+(paid?' · <span class="pill">שולם</span>':'')+'</div></div>'+
+    '<div class="br">'+brLabel(b.branch)+'</div></div>';
+}
+
+function render(d){
+  hide('step-phone'); hide('step-code'); show('area');
+  $('st-punch').textContent = d.punch_left||0;
+  $('st-visits').textContent = d.visits||0;
+  const up=d.upcoming||[], pa=d.past||[];
+  $('upcoming').innerHTML = up.length ? up.map(b=>bkRow(b,true)).join('') : '<div class="empty">אין הזמנות קרובות. נשמח לראותכם! 🌿</div>';
+  $('past').innerHTML = pa.length ? pa.slice(0,15).map(b=>bkRow(b,false)).join('') : '<div class="empty">עדיין אין היסטוריה</div>';
+}
+
+function logout(){ try{localStorage.removeItem(LS);}catch(e){} location.reload(); }
+
+// כניסה חוזרת שקטה עם טוקן (עד 30 יום)
+(async function(){
+  let saved; try{saved=JSON.parse(localStorage.getItem(LS)||'null');}catch(e){}
+  if(!saved||!saved.token) return;
+  try{
+    const r=await fetch(API+'/my/data?phone='+encodeURIComponent(saved.phone)+'&token='+encodeURIComponent(saved.token));
+    const d=await r.json();
+    if(r.ok&&d.ok){ PHONE=saved.phone; render(d); }
+    else { try{localStorage.removeItem(LS);}catch(e){} }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

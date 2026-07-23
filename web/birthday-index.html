@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גאיהלנד · הזמנת יום הולדת</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&family=Suez+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sage:#7C8B5E; --sage-deep:#5E6B45; --amber:#C89B4A; --taupe:#B0A08B;
+  --cream:#FAF6EE; --sand:#D5C59C; --ink:#3A3730; --muted:#8A8375;
+  --line:#E4DDCD; --white:#fff;
+  --r:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Assistant',system-ui,sans-serif;background:var(--cream);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.display{font-family:'Suez One',serif;font-weight:400;letter-spacing:-.01em;line-height:1.25}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* HERO */
+.hero{position:relative;padding:64px 0 44px;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0;background:
+  radial-gradient(circle at 88% 12%, #EFE7D3 0 180px, transparent 181px),
+  radial-gradient(circle at 8% 78%, #E8EDE0 0 130px, transparent 131px);opacity:.9;z-index:0}
+.hero .wrap{position:relative;z-index:1}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--line);
+  border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;color:var(--sage-deep)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--sage);display:inline-block}
+h1{font-size:clamp(26px,5vw,50px);margin:18px 0 12px;max-width:16ch}
+.scarce{background:#F1F5EC;border:1px solid #CBD8BC;border-radius:10px;padding:11px 14px;margin-bottom:16px;font-size:14.5px;color:#4F5A3C}
+.scarce.hot{background:#FDF0E6;border-color:#E8C4A0;color:#8A5626;font-weight:600}
+.cakes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:-4px 0 10px}
+@media(max-width:640px){.cakes{grid-template-columns:1fr}}
+.cake{background:#fff;border:1.5px solid var(--line);border-radius:11px;padding:11px;text-align:start;cursor:pointer;font:inherit;transition:.15s}
+.cake:hover{border-color:var(--taupe)}
+.cake.on{border-color:var(--sage);background:#FBFCF9;box-shadow:0 0 0 2px rgba(124,139,94,.12)}
+.cake b{display:block;font-size:14.5px}
+.cake span{display:block;font-size:12.5px;color:var(--muted);margin:2px 0 5px}
+.cake i{font-style:normal;font-weight:700;color:var(--sage-deep);font-size:14px}
+.gy-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.gy-card{background:#fff;border:1px solid var(--line,#e8e0d0);border-radius:16px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.05)}
+.gy-card img,.gy-card video{width:100%;height:200px;object-fit:cover;display:block}
+.gy-embed{position:relative;padding-bottom:56.25%;height:0}
+.gy-embed iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.gy-cap{display:block;padding:10px 14px;font-size:14px;font-weight:700;color:var(--sage,#7C8C63)}
+.nudge{background:#FBF5E7;border:1px dashed var(--amber);border-radius:12px;padding:13px 15px;margin-top:14px;font-size:14.5px;line-height:1.5}
+.nudge b{color:#8A6A20}
+.nudge button{margin-top:9px;width:100%;background:var(--amber);color:#fff;border:0;border-radius:9px;padding:10px;font:inherit;font-weight:700;cursor:pointer}
+.nudge button:hover{filter:brightness(.94)}
+h1 em{font-style:normal;color:var(--sage-deep);position:relative}
+h1 em:after{content:"";position:absolute;inset-inline:0;bottom:2px;height:10px;background:var(--sand);opacity:.55;z-index:-1;border-radius:4px}
+.lede{font-size:19px;color:var(--muted);max-width:52ch}
+.trust{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.chip{background:var(--white);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600}
+.chip b{color:var(--sage-deep)}
+
+/* LAYOUT */
+.grid{display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start;padding-bottom:120px}
+@media(max-width:900px){.grid{grid-template-columns:1fr;gap:0;padding-bottom:190px}}
+
+section.step{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:26px;margin-bottom:20px}
+.step-head{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}
+.step-num{font-family:'Suez One',serif;color:var(--amber);font-size:15px}
+.step h2{font-size:23px}
+.step-sub{color:var(--muted);font-size:15px;margin-bottom:20px}
+
+/* TIERS */
+.tiers{display:grid;gap:14px}
+.tier{position:relative;border:1.5px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:.18s;background:var(--white)}
+.tier:hover{border-color:var(--taupe);transform:translateY(-1px)}
+.tier.on{border-color:var(--sage);background:#FBFCF9;box-shadow:0 0 0 3px rgba(124,139,94,.13)}
+.tier.hot{border-color:var(--sand)}
+.tier.hot.on{border-color:var(--sage)}
+.badge{position:absolute;top:-11px;inset-inline-start:20px;background:var(--sage);color:#fff;font-size:12.5px;font-weight:700;
+  padding:3px 12px;border-radius:999px}
+.tier-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.tier-name{font-family:'Suez One',serif;font-size:20px}
+.tier-tag{font-size:14px;color:var(--muted)}
+.price{text-align:end;white-space:nowrap}
+.price .now{font-family:'Suez One',serif;font-size:26px;color:var(--sage-deep)}
+.price .was{font-size:14px;color:var(--muted);text-decoration:line-through;display:block}
+.save{display:inline-block;margin-top:6px;background:#F2EEE0;color:#8A6A20;font-size:13px;font-weight:700;padding:2px 9px;border-radius:6px}
+.tier ul{list-style:none;margin-top:14px;display:grid;gap:6px}
+.tier li{font-size:15px;padding-inline-start:22px;position:relative}
+.tier li:before{content:"";position:absolute;inset-inline-start:0;top:9px;width:9px;height:9px;border-radius:50%;background:var(--sage);opacity:.35}
+.tier li.plus:before{background:var(--amber);opacity:1}
+.tier li.plus{font-weight:600}
+
+/* ADDONS */
+.addon{display:flex;align-items:center;gap:14px;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:.15s}
+.addon:hover{border-color:var(--taupe)}
+.addon.on{border-color:var(--sage);background:#FBFCF9}
+.addon.inc{opacity:.65;cursor:default;background:#F7F6F1;border-style:dashed}
+.addon input{accent-color:var(--sage);width:19px;height:19px;flex:none}
+.addon .t{flex:1}
+.addon .t b{display:block;font-size:16px}
+.addon .t span{font-size:14px;color:var(--muted)}
+.addon .p{font-weight:700;color:var(--sage-deep);white-space:nowrap}
+
+/* FORM */
+.field{margin-bottom:16px}
+label{display:block;font-weight:600;font-size:15px;margin-bottom:6px}
+input[type=text],input[type=tel],input[type=email],input[type=date],select,textarea,input[type=number]{
+  width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:11px;font:inherit;background:var(--white);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--sage);outline-offset:1px;border-color:transparent}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+.slots{display:flex;flex-wrap:wrap;gap:8px}
+.slot{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.slot.on{background:var(--sage);color:#fff;border-color:var(--sage)}
+.note{background:#F7F4EA;border-inline-start:3px solid var(--sand);padding:12px 14px;border-radius:0 10px 10px 0;font-size:14.5px;color:#6B6455}
+/* התראת תאריך תפוס — בולטת */
+.alert{background:#FCEDEA;border:1.5px solid #E8B4AC;border-inline-start:5px solid #C0503F;
+  border-radius:0 12px 12px 0;padding:14px 16px;font-size:15.5px;font-weight:600;color:#8E3226;
+  display:flex;gap:10px;align-items:flex-start;animation:pop .22s ease-out}
+.alert:before{content:"⚠️";font-size:18px;line-height:1.2;flex:none}
+@keyframes pop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.err{color:#B4413A;font-size:14px;margin-top:4px;display:none}
+.err.on{display:block}
+
+/* TICKET (signature) */
+.ticket{position:sticky;top:20px;background:var(--white);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.ticket-top{background:linear-gradient(160deg,var(--sage-deep),var(--sage));color:#fff;padding:20px 22px}
+.ticket-top .k{font-size:13px;opacity:.8;letter-spacing:.06em;font-weight:600}
+.ticket-top .v{font-family:'Suez One',serif;font-size:21px;margin-top:2px}
+.perf{height:16px;background:
+  radial-gradient(circle at 8px 0, transparent 7px, var(--white) 8px) repeat-x;background-size:16px 16px;
+  margin-top:-8px;position:relative;z-index:2}
+.ticket-body{padding:6px 22px 20px}
+.li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.li span:last-child{font-weight:700;white-space:nowrap}
+.li.sub{color:var(--muted);font-size:14px}
+.li.empty{color:var(--muted);border:0;font-size:14.5px}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;margin-top:4px}
+.total .lbl{font-weight:700}
+.total .amt{font-family:'Suez One',serif;font-size:30px;color:var(--sage-deep)}
+.dep{background:#F7F4EA;border-radius:12px;padding:12px 14px;margin-top:14px;font-size:14.5px}
+.dep b{color:var(--ink)}
+.cta{display:block;width:100%;text-align:center;margin-top:14px;background:var(--sage);color:#fff;border:0;border-radius:12px;
+  padding:15px;font:inherit;font-weight:700;font-size:17px;cursor:pointer;transition:.15s;text-decoration:none}
+.cta:hover{background:var(--sage-deep)}
+.cta.ghost{background:transparent;color:var(--sage-deep);border:1.5px solid var(--sage);margin-top:8px}
+.fineprint{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px}
+
+/* mobile bar */
+@media(max-width:900px){
+  .ticket{position:fixed;inset:auto 0 0 0;top:auto;border-radius:18px 18px 0 0;border:0;box-shadow:0 -8px 30px rgba(0,0,0,.13);z-index:40;max-height:82vh;overflow:auto}
+  .ticket-top,.perf{display:none}
+  .ticket.open .ticket-top{display:block}
+  .ticket-body{padding:10px 18px 14px}
+  /* במצב סגור — רק סה״כ + כפתור אחד */
+  .ticket:not(.open) .li,
+  .ticket:not(.open) .total,
+  .ticket:not(.open) .dep,
+  .ticket:not(.open) #wa,
+  .ticket:not(.open) .fineprint,
+  .ticket:not(.open) .nudge{display:none}
+  .ticket:not(.open) .cta{margin-top:8px;padding:13px}
+  .toggle{display:flex;justify-content:space-between;align-items:center;width:100%;background:none;border:0;font:inherit;padding:6px 0;cursor:pointer;color:var(--muted);font-weight:600}
+  .toggle b{font-family:'Suez One',serif;font-size:21px;color:var(--sage-deep)}
+  .toggle .chev{transition:.2s}
+  .ticket.open .toggle .chev{transform:rotate(180deg)}
+}
+.toggle{display:none}
+
+/* POLICY */
+details{background:var(--white);border:1px solid var(--line);border-radius:var(--r);padding:18px 22px;margin-bottom:20px}
+summary{font-weight:700;cursor:pointer;font-size:16px}
+details p,details li{font-size:14.5px;color:#5F5A50;margin-top:8px}
+details ul{margin-inline-start:18px}
+footer{text-align:center;padding:30px 0 40px;color:var(--muted);font-size:14px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  .addon-media{display:flex;gap:8px;align-items:center;margin-top:7px}
+  .ex-row{margin:-4px 0 12px;padding:0 6px;display:flex;justify-content:flex-start}
+  .see-example{background:#F3EEE3;border:1.5px solid var(--sage,#7C8C63);color:var(--sage,#7C8C63);border-radius:9px;padding:7px 15px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+  .see-example:hover{background:var(--sage,#7C8C63);color:#fff}
+  .addon-media img{width:54px;height:54px;object-fit:cover;border-radius:9px;cursor:pointer;border:1.5px solid #e6ddcb;transition:.15s}
+  .addon-media img:hover{transform:scale(1.05)}
+  .media-vid{background:#7C8B5E;color:#fff;border:0;border-radius:8px;padding:6px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+  .media-vid:hover{filter:brightness(.94)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span> ראשון לציון · יבנה</span>
+    <h1>סוגרים יום הולדת <em>בשלוש דקות</em>. בלי שיחות, בלי הלוך־חזור.</h1>
+    <p class="lede">בוחרים חבילה, בוחרים תאריך, משלמים מקדמה — והתאריך שלכם נשמר. אנחנו מטפלים בכל השאר.</p>
+    <div class="trust">
+      <span class="chip">🎈 <b>3 שעות</b> משחקייה סגורה רק לכם</span>
+      <span class="chip">👩‍🍳 איש צוות <b>צמוד לאורך כל האירוע</b></span>
+      <span class="chip">🍕 פיצות לכל הילדים · 10 חטיפים · 10 שתייה</span>
+      <span class="chip">👶 עד <b>30 ילדים</b></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap grid">
+  <div>
+
+    <!-- 1. PACKAGE -->
+    <section class="step">
+      <div class="step-head"><span class="step-num">01</span><h2>בחרו חבילה</h2></div>
+      <p class="step-sub">כל החבילות כוללות את מתחם המשחקייה הסגור, ליווי צוות, הזמנה דיגיטלית וכיבוד מלא.</p>
+      <div class="tiers" id="tiers"></div>
+    </section>
+
+    <!-- 2. EXTRAS -->
+    <section class="step">
+      <div class="step-head"><span class="step-num">02</span><h2>תוספות לאירוע</h2></div>
+      <p class="step-sub">אפשר להוסיף עכשיו או לעדכן איתנו עד 7 ימים לפני האירוע.</p>
+      <div id="addons"></div>
+      <div class="field" id="bagsWrap" style="display:none">
+        <label for="kids">כמה ילדים מוזמנים? <span id="bagsHint" style="font-weight:400;color:var(--muted)"></span></label>
+        <input type="number" id="kids" min="1" max="60" value="15">
+      </div>
+    </section>
+
+    <!-- 3. DETAILS -->
+    <section class="step">
+      <div class="step-head"><span class="step-num">03</span><h2>פרטי האירוע</h2></div>
+      <p class="step-sub">כמה שדות ואנחנו נועלים לכם את התאריך.</p>
+
+      <div class="scarce" id="scarcity" style="display:none"></div>
+      <div class="row">
+        <div class="field">
+          <label for="branch">סניף</label>
+          <select id="branch"><option value="">בחרו סניף</option><option>ראשון לציון</option><option>יבנה</option></select>
+          <div class="err" id="e-branch">צריך לבחור סניף</div>
+        </div>
+        <div class="field">
+          <label for="date">תאריך האירוע</label>
+          <input type="date" id="date">
+          <div class="err" id="e-date">צריך לבחור תאריך</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>שעת התחלה <span style="font-weight:400;color:var(--muted)">· האירוע נמשך 3 שעות</span></label>
+        <div class="slots" id="slots"></div>
+        <div class="err" id="e-time">צריך לבחור שעה</div>
+        <div class="note" id="slotHint" style="display:none;margin-top:10px"></div>
+        <div class="alert" id="availMsg" style="display:none;margin-top:10px"></div>
+      </div>
+
+      <div class="row">
+        <div class="field"><label for="parent">שם ההורה</label><input type="text" id="parent"><div class="err" id="e-parent">שדה חובה</div></div>
+        <div class="field"><label for="phone">טלפון נייד</label><input type="tel" id="phone" placeholder="05X-XXXXXXX"><div class="err" id="e-phone">מספר טלפון לא תקין</div></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="email">אימייל</label><input type="email" id="email"><div class="err" id="e-email">כתובת מייל לא תקינה</div></div>
+        <div class="field"><label for="child">שם הילד/ה</label><input type="text" id="child"></div>
+      </div>
+      <div class="field">
+        <label for="notes">הערות, בקשות מיוחדות או אלרגיות</label>
+        <textarea id="notes" rows="3" placeholder="למשל: אלרגיה לאגוזים, קונספט עיצוב שאהבתם, שעת הגעה מוקדמת…"></textarea>
+      </div>
+    </section>
+
+    <details>
+      <summary>תנאי ההזמנה, תשלום וביטול</summary>
+      <p><b>תשלום:</b> מקדמה של 500 ₪ נגבית עכשיו ומאשרת את התאריך. היתרה משולמת בסיום האירוע.</p>
+      <p><b>שבתות וחגים:</b> תוספת של 499 ₪ מתווספת אוטומטית לחישוב.</p>
+      <p><b>ביטול:</b></p>
+      <ul>
+        <li>עד 7 ימים לפני האירוע — החזר מלא של המקדמה.</li>
+        <li>פחות מ־7 ימים — דמי ביטול של 50% מסכום ההזמנה.</li>
+        <li>פחות מ־24 שעות — דמי ביטול של 100% מסכום ההזמנה.</li>
+      </ul>
+      <p><b>נהלי המקום:</b> עד 30 ילדים. אכילה במקומות המיועדים בלבד, אין לחבר מכשירי חשמל חיצוניים, והבאת אוכל מבחוץ טעונה אישור מראש.</p>
+    </details>
+
+  </div>
+
+  <!-- TICKET -->
+  <aside class="ticket" id="ticket">
+    <div class="ticket-top">
+      <div class="k">האירוע שלכם</div>
+      <div class="v" id="tHead">בחרו חבילה כדי להתחיל</div>
+    </div>
+    <div class="perf"></div>
+    <div class="ticket-body">
+      <button class="toggle" id="toggle" type="button">
+        <span>סה״כ לאירוע <span class="chev">⌃</span></span><b id="mTotal">—</b>
+      </button>
+      <div id="lines"><div class="li empty">עדיין לא נבחרה חבילה.</div></div>
+      <div class="total"><span class="lbl">סה״כ לאירוע</span><span class="amt" id="total">—</span></div>
+      <div class="nudge" id="nudge" style="display:none"></div>
+      <div class="dep">משלמים עכשיו <b>מקדמה 500 ₪</b> ונועלים את התאריך. היתרה — <b id="rest">—</b> — בסיום האירוע.</div>
+      <button class="cta" id="book">לתשלום מקדמה ונעילת התאריך</button>
+      <a class="cta ghost" id="wa" href="#" target="_blank" rel="noopener">שליחת הפרטים בוואטסאפ</a>
+      <p class="fineprint">ביטול עד 7 ימים לפני — החזר מלא של המקדמה.</p>
+    </div>
+  </aside>
+</main>
+
+<footer>גאיהלנד · משחקייה לגילאי 0–5 · ראשון לציון ויבנה</footer>
+
+<script>
+/* ============================================================
+   ⚙️ הגדרות — כל המחירים והטקסטים לעריכה כאן בלבד
+   ============================================================ */
+/* ============================================================
+   ⚙️ קונפיגורציה — נטענת מוורדפרס. שנו שם רק את CFG_URL.
+   ============================================================ */
+const CFG_URL = 'https://gayaland.co.il/wp-json/gayaland/v1/birthday-config';
+
+// ערכי ברירת מחדל עד שהקונפיגורציה תיטען (מונעים שבירה)
+let CFG = {
+  api:        "https://script.google.com/macros/s/AKfycbyG85xJ_sltXLdf_gHkB1pRARLuMNDKM0CDeimCYPb5Iu-V0xG9rUVj5HHJlTTDU-wA/exec",
+  whatsapp:   "972547801818",
+  nayaxDeposit: "https://uiservices.ecom.nayax.com/hosted/?merchantID=4565307&url_redirect=https%3a%2f%2fgayaland-birthday.netlify.app%2f%3fpaid%3d1&url_notify=&Notification_url=https%3a%2f%2fscript.google.com%2fmacros%2fs%2fAKfycbyG85xJ_sltXLdf_gHkB1pRARLuMNDKM0CDeimCYPb5Iu-V0xG9rUVj5HHJlTTDU-wA%2fexec%3fnayax%3d1&trans_comment=&trans_refNum=&Brand=&trans_installments=1&amount_options=&ui_version=8&trans_type=0&trans_amount=500&trans_currency=ILS&disp_paymentType=&disp_payFor=%d7%9e%d7%a7%d7%93%d7%9e%d7%94+%d7%9c%d7%99%d7%95%d7%9d+%d7%94%d7%95%d7%9c%d7%93%d7%aa&disp_recurring=0&disp_lng=he-il&disp_mobile=auto&signature=yCmSamQVxl9tKb9YdAwMFrQ5AN9xX5ID%2fXb7ZXM992A%3d",
+  deposit:    500, weekendFee: 499, bagsIncluded: 30, scarcityAt: 12, maxKids: 60,
+  designImg: "", designVideo: "", giftImg: "",
+  holidays:   [],
+  slotsByDay: {0:["16:00","17:00"],1:["16:00","17:00"],2:["16:00","17:00"],
+               3:["16:00","17:00"],4:["16:00","17:00"],5:["12:00","13:00"],
+               6:["09:00","12:00","13:00","16:00"]},
+  slotNote:   {5:"בשישי אפשר להתחיל עד 13:00.",6:"בשבת יש תוספת של 499 ₪."},
+  base: {lines:["מתחם משחקייה סגור ל־3 שעות","איש צוות צמוד","הזמנה דיגיטלית","10 סוגי חטיפים + 10 סוגי שתייה","פיצות לכל הילדים"]},
+  addons: {design:{name:"חבילת עיצוב",price:900,sub:"בלונים, שולחן מעוצב ופינת צילום"},coffee:{name:"חבילת קפה להורים",price:300,sub:"קפה ללא הגבלה"},bags:{name:"שקיות הפתעה",price:25,per:true,sub:"25 ₪ לשקית"},cake:{name:"עוגת יום הולדת",price:0,cake:true,sub:""}},
+  cakes:[{name:"עוגת מספר",price:290,sub:"קצפת ופירות"},{name:"עוגה מעוצבת",price:390,sub:""},{name:"מגש קאפקייקס",price:250,sub:""}],
+  tiers:[
+    {id:"basic",name:"החבילה הבסיסית",tag:"",price:2000,value:2000,includes:[]},
+    {id:"party",name:"חבילת החגיגה",tag:"החבילה שרוב ההורים בוחרים",price:2890,value:3200,includes:["design","coffee"],hot:true,badge:"הכי נבחרת · חוסכים 310 ₪"},
+    {id:"vip",name:"חבילת ה־VIP",tag:"",price:3490,value:3950,includes:["design","coffee","bagsAll"]}
+  ],
+  nudge:{
+    basic:{to:"party",cta:"שדרוג לחבילת החגיגה",
+      html:'רוב ההורים לא מוותרים על זה: <b>עיצוב מלא של המקום בקונספט שתבחרו</b> — בלונים, שולחן מעוצב ופינת צילום — <b>וקפה חופשי לכל ההורים</b>. שווי 1,200 ₪, אצלכם ב־890 ₪.'},
+    party:{to:"vip",cta:"שדרוג לחבילת ה־VIP",
+      html:'<b>עוד 600 ₪</b> וכל ילד הולך הביתה עם שקית הפתעה (שווי 750 ₪). אתם רק מגיעים — הכול מחכה מוכן.'}
+  }
+};
+
+/** מיפוי תשובת WP לאובייקט CFG */
+function applyWpConfig(wp){
+  if(!wp) return;
+  CFG.designImg = wp.design_img||'';
+  CFG.giftImg   = wp.gift_img||'';
+  CFG.giftVideo = wp.gift_video||'';
+  CFG.giftPrice = wp.gift_price||25;
+  CFG.giftLabel = wp.gift_label||'שקית הפתעה לילד';
+  CFG.testMode  = !!wp.test_mode;
+  CFG.testPrice = wp.test_price || 1;
+  if(wp.nayax) CFG.nayaxDeposit = wp.nayax;                              // וורדפרס בוחר: אמיתי או בדיקה
+  if(wp.design_img)   CFG.designImg   = wp.design_img;
+  if(wp.design_video) CFG.designVideo = wp.design_video;
+  if(wp.gift_img)     CFG.giftImg     = wp.gift_img;
+  if(wp.gift_price){  CFG.addons.bags.price = wp.gift_price; CFG.addons.bags.sub = wp.gift_price+" ₪ לשקית"; }
+  else if(wp.test_mode && wp.nayax_test) CFG.nayaxDeposit = wp.nayax_test;
+  if(wp.deposit)      CFG.deposit      = wp.deposit;
+  if(wp.weekend_fee)  CFG.weekendFee   = wp.weekend_fee;
+  if(wp.bags_incl)    CFG.bagsIncluded = wp.bags_incl;
+  if(wp.scarcity_at)  CFG.scarcityAt   = wp.scarcity_at;
+  if(wp.max_kids)     CFG.maxKids      = Math.max(60, wp.max_kids);   // רצפה 60 — לא חוסמים הזמנת שקיות
+  if(wp.hold_hours)   CFG.holdHours    = wp.hold_hours;
+  if(wp.holidays)     CFG.holidays     = wp.holidays;
+  if(wp.whatsapp)     CFG.whatsapp     = wp.whatsapp;
+  if(wp.cancel_url)   CFG.cancel_url   = wp.cancel_url;
+  if(wp.slots_by_day){
+    CFG.slotsByDay={};
+    for(const d in wp.slots_by_day) CFG.slotsByDay[+d]=wp.slots_by_day[d];
+  }
+  if(wp.tiers && wp.tiers.length){
+    CFG.tiers=wp.tiers.map(t=>({...t,includes:t.includes||[]}));
+  }   // ריק → נשארים עם ברירת המחדל
+  if(wp.bd_addons){
+    for(const k in wp.bd_addons){
+      if(CFG.addons[k]) CFG.addons[k]={...CFG.addons[k],...wp.bd_addons[k]};
+    }
+  }
+  if(wp.cakes && wp.cakes.length)    CFG.cakes=wp.cakes;
+  if(wp.bd_addons && Object.keys(wp.bd_addons).length){
+    for(const k in wp.bd_addons) if(CFG.addons[k]) CFG.addons[k]={...CFG.addons[k],...wp.bd_addons[k]};
+  }
+  if(wp.nudge && Object.keys(wp.nudge).length) CFG.nudge=wp.nudge;   // ריק → ברירת מחדל
+  if(wp.base_lines && wp.base_lines.length) CFG.base.lines=wp.base_lines;
+}
+
+(async()=>{
+  try{
+    const r=await fetch(CFG_URL,{cache:'no-cache'});
+    if(r.ok) applyWpConfig(await r.json());
+  }catch(e){ console.warn('WP config unavailable, using defaults'); }
+  // מריצים את האתחול רק אחרי שהקונפיג נטען
+  initPage();
+})();
+/* ============================================================ */
+
+let S = { tier:null, addons:{design:false,coffee:false,bags:false,cake:false}, kids:15, time:null, cakeIdx:null };
+function initPage(){
+  if(CFG.testMode){
+    document.body.insertAdjacentHTML('afterbegin',
+      '<div style="background:#FBEDE9;border-bottom:3px solid #C0503F;padding:12px 20px;text-align:center;'+
+      'font-weight:700;color:#8E3226;font-size:15px">🧪 מצב בדיקה — התשלום יהיה '+CFG.testPrice+' ₪ בלבד. '+
+      'לא לפרסם ללקוחות.</div>');
+  }
+const $ = s=>document.querySelector(s);
+const ils = n=>n.toLocaleString("he-IL")+" ₪";
+
+// ---- tiers
+$("#tiers").innerHTML = CFG.tiers.map(t=>{
+  const extra = t.includes.map(k=> k==="bagsAll"
+      ? `<li class="plus">שקיות הפתעה לכל הילדים (עד 30)</li>`
+      : `<li class="plus">${CFG.addons[k].name}</li>`).join("");
+  const base = CFG.base.lines.map(l=>`<li>${l}</li>`).join("");
+  const save = t.value>t.price ? `<span class="save">שווי ${ils(t.value)} · חוסכים ${ils(t.value-t.price)}</span>` : "";
+  return `<div class="tier ${t.hot?"hot":""}" data-id="${t.id}" role="button" tabindex="0">
+    ${t.badge?`<span class="badge">${t.badge}</span>`:""}
+    <div class="tier-top">
+      <div><div class="tier-name">${t.name}</div><div class="tier-tag">${t.tag}</div></div>
+      <div class="price">${t.value>t.price?`<span class="was">${ils(t.value)}</span>`:""}<span class="now">${ils(t.price)}</span></div>
+    </div>
+    ${save}
+    <ul>${extra}${base}</ul>
+  </div>`;
+}).join("");
+
+document.querySelectorAll(".tier").forEach(el=>{
+  const pick=()=>{
+    S.tier = CFG.tiers.find(t=>t.id===el.dataset.id);
+    document.querySelectorAll(".tier").forEach(x=>x.classList.toggle("on",x===el));
+    S.tier.includes.forEach(k=>{ if(k!=="bagsAll") S.addons[k]=false; });
+    if(S.tier.includes.includes("bagsAll")) S.addons.bags=false;
+    render();
+  };
+  el.addEventListener("click",pick);
+  el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick();}});
+});
+
+// ---- slots (משתנים לפי היום בשבוע)
+function renderSlots(){
+  const d = $("#date").value;
+  const box = $("#slots"), hint = $("#slotHint");
+  if(!d){
+    box.innerHTML = `<span style="color:var(--muted);font-size:15px">בחרו קודם תאריך — השעות הפנויות ייפתחו כאן.</span>`;
+    hint.style.display="none"; S.time=null; return;
+  }
+  const day = new Date(d+"T12:00").getDay();
+  const list = CFG.slotsByDay[day] || [];
+  if(!list.includes(S.time)) S.time = null;
+  box.innerHTML = list.map(s=>`<button type="button" class="slot ${S.time===s?"on":""}" data-t="${s}">${s} – ${end3(s)}</button>`).join("");
+  box.querySelectorAll(".slot").forEach(b=>b.onclick=()=>{ S.time=b.dataset.t; render(); });
+  const note = CFG.slotNote[day];
+  hint.textContent = note || ""; hint.style.display = note ? "block" : "none";
+}
+const end3 = t => String((+t.split(":")[0]+3)).padStart(2,"0")+":"+t.split(":")[1];
+
+// ---- addons
+function ytEmbed(u){
+  if(!u) return "";
+  const m = u.match(/(?:youtu\.be\/|v=)([\w-]{11})/);
+  return m ? "https://www.youtube.com/embed/"+m[1] : "";
+}
+function mediaBtn(label, img, video){
+  const emb = ytEmbed(video);
+  const type = video ? (emb ? 'yt' : 'vid') : 'img';
+  const url  = video ? (emb || video) : img;
+  if(!url) return "";
+  return `<div class="ex-row"><button type="button" class="see-example" onclick="event.preventDefault();event.stopPropagation();openMedia('${type}','${url}')">👁 ${label}</button></div>`;
+}
+function mediaThumb(k){
+  if(k==="design") return mediaBtn("ראו דוגמה לעיצוב", CFG.designImg, CFG.designVideo);
+  if(k==="bags")   return mediaBtn("ראו דוגמת מתנה", CFG.giftImg, CFG.giftVideo);
+  return "";
+}
+window.openMedia=function(type,url){
+  const o=document.createElement("div");
+  o.style.cssText="position:fixed;inset:0;background:rgba(20,18,15,.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer";
+  let closed=false;
+  const close=()=>{
+    if(closed) return; closed=true;
+    o.remove();
+    window.removeEventListener("popstate",onPop);
+    if(history.state&&history.state.gyMedia) history.back();
+  };
+  const onPop=()=>{ closed=true; o.remove(); window.removeEventListener("popstate",onPop); };
+  o.onclick=close;
+  let inner="";
+  if(type==="img") inner=`<img src="${url}" style="max-width:92%;max-height:88%;border-radius:14px">`;
+  else if(type==="yt") inner=`<iframe width="720" height="405" src="${url}?autoplay=1" frameborder="0" allow="autoplay" allowfullscreen style="max-width:92%;border-radius:14px"></iframe>`;
+  else inner=`<video src="${url}" controls autoplay style="max-width:92%;max-height:88%;border-radius:14px"></video>`;
+  o.innerHTML=`<button aria-label="סגור" style="position:absolute;top:16px;left:16px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.9);font-size:22px;font-weight:700;cursor:pointer;line-height:1">✕</button><div onclick="event.stopPropagation()">${inner}</div>`;
+  o.querySelector("button").onclick=(e)=>{ e.stopPropagation(); close(); };
+  document.body.appendChild(o);
+  // רישום בהיסטוריה — כך שכפתור "אחורה" בנייד סוגר את המדיה במקום לצאת מהדף
+  history.pushState({gyMedia:true},"");
+  window.addEventListener("popstate",onPop);
+};
+
+function renderAddons(){
+  const inc = k => S.tier && (S.tier.includes.includes(k) || (k==="bags" && S.tier.includes.includes("bagsAll")));
+  $("#addons").innerHTML = Object.entries(CFG.addons).map(([k,a])=>{
+    const included = inc(k);
+    const price = included ? "כלול בחבילה" : a.cake ? "מ־"+Math.min(...CFG.cakes.map(c=>c.price))+" ₪" : (a.per? `${a.price} ₪ לשקית` : "+ "+ils(a.price));
+    const row = `<label class="addon ${included?"inc":""} ${S.addons[k]&&!included?"on":""}" data-k="${k}">
+      <input type="checkbox" ${included||S.addons[k]?"checked":""} ${included?"disabled":""}>
+      <span class="t"><b>${a.name}</b><span>${a.sub}</span></span>
+      <span class="p">${price}</span></label>${mediaThumb(k)}`;
+    // בחירת עוגה — נפתחת רק אם סימנו
+    if(a.cake && S.addons[k] && !included){
+      return row + `<div class="cakes">` + CFG.cakes.map((c,i)=>
+        `<button type="button" class="cake ${S.cakeIdx===i?"on":""}" data-i="${i}">
+           <b>${c.name}</b><span>${c.sub}</span><i>${ils(c.price)}</i></button>`).join("") + `</div>`;
+    }
+    return row;
+  }).join("");
+  $("#addons").querySelectorAll(".addon").forEach(el=>{
+    const box = el.querySelector("input");
+    box.onchange = ()=>{
+      S.addons[el.dataset.k]=box.checked;
+      if(el.dataset.k==="cake" && !box.checked) S.cakeIdx=null;
+      if(el.dataset.k==="cake" && box.checked && S.cakeIdx==null) S.cakeIdx=0;
+      render();
+    };
+  });
+  $("#addons").querySelectorAll(".cake").forEach(b=>b.onclick=()=>{ S.cakeIdx=+b.dataset.i; render(); });
+  const showKids = S.addons.bags || (S.tier && S.tier.includes.includes("bagsAll"));
+  $("#bagsWrap").style.display = showKids ? "block" : "none";
+  const hint=$("#bagsHint");
+  if(hint) hint.textContent = "· בחבילת ה־VIP כלולות "+CFG.bagsIncluded+" שקיות. מעבר לכך — "+CFG.giftPrice+" ₪ לשקית.";
+}
+
+// ---- סקרסיטי אמיתי: מוצג רק כשהוא באמת דוחף
+/* placeholder */ function _noop_(){}
+function renderScarcity(){
+  const el = $("#scarcity"); if(!el) return;
+  const br = $("#branch").value;
+  if(!AVAIL.loaded || !br){ el.style.display="none"; return; }
+  const start = Date.now()+7*864e5;
+  let free=0;
+  for(let i=0;i<30;i++){
+    const iso = new Date(start+i*864e5).toISOString().slice(0,10);
+    if(!taken(iso,br,null)) free++;
+  }
+  // 28 תאריכים פנויים = הודעה שמרגיעה. מציגים רק כשהמלאי באמת נגמר.
+  if(free > CFG.scarcityAt){ el.style.display="none"; return; }
+  el.style.display="block";
+  el.className = free <= 5 ? "scarce hot" : "scarce";
+  el.innerHTML = free <= 5
+    ? `🔥 נותרו <b>${free} תאריכים פנויים בלבד</b> בסניף ${br} בחודש הקרוב.`
+    : `⏳ נותרו <b>${free} תאריכים פנויים</b> בסניף ${br} בחודש הקרוב.`;
+}
+$("#kids").oninput = e => {
+  const raw = +e.target.value||1;
+  S.kids = Math.max(1, Math.min(CFG.maxKids, raw));
+  if(raw > CFG.maxKids) e.target.value = S.kids;   // לא חותכים בשקט
+  render();
+};
+
+// ---- זמינות (נטען מגיליון התגובות)
+let AVAIL = {booked:[], blocked:[], mode:"day", loaded:false};
+async function loadAvail(){
+  if(!CFG.api) return;
+  try{
+    const r = await fetch(CFG.api);
+    AVAIL = Object.assign(await r.json(), {loaded:true});
+  }catch(e){ console.warn("availability unavailable", e); }
+  render();
+}
+loadAvail();
+
+function taken(date, branch, time){
+  if(!date || !branch) return false;
+  if(AVAIL.blocked.some(b=>b.date===date && (!b.branch || b.branch===branch))) return true;
+  return AVAIL.booked.some(b=>{
+    if(b.date!==date || b.branch!==branch) return false;
+    return AVAIL.mode==="day" ? true : b.time===time;
+  });
+}
+function checkAvail(){
+  const d=$("#date").value, br=$("#branch").value;
+  const msg=$("#availMsg");
+  document.querySelectorAll(".slot").forEach(b=>{
+    const t = taken(d,br,b.dataset.t);
+    b.disabled = t;
+    b.style.opacity = t?.35:1;
+    b.style.cursor = t?"not-allowed":"pointer";
+    if(t && S.time===b.dataset.t){ S.time=null; b.classList.remove("on"); }
+  });
+  const full = d && br && AVAIL.mode==="day" && taken(d,br,null);
+  msg.style.display = full ? "flex" : "none";
+  if(full) msg.innerHTML = `<span>התאריך הזה כבר תפוס בסניף ${br}. בחרו תאריך אחר — או בדקו אם הסניף השני פנוי.</span>`;
+  return !full;
+}
+
+// ---- pricing
+function isSurcharge(){
+  const d = $("#date").value; if(!d) return false;
+  const day = new Date(d+"T12:00").getDay();      // 6 = שבת
+  return day===6 || CFG.holidays.includes(d);
+}
+function calc(){
+  if(!S.tier) return {lines:[],total:0};
+  const L=[{n:S.tier.name,v:S.tier.price}];
+  const incBags = S.tier.includes.includes("bagsAll");
+  if(incBags){
+    L.push({n:`שקיות הפתעה · ${S.kids} ילדים`, v:0, sub:true});
+    if(S.kids > CFG.bagsIncluded){
+      const extra = S.kids - CFG.bagsIncluded;
+      L.push({n:`תוספת ${extra} שקיות מעבר ל־${CFG.bagsIncluded}`, v:CFG.addons.bags.price*extra, sub:true});
+    }
+  }
+  Object.entries(CFG.addons).forEach(([k,a])=>{
+    if(S.tier.includes.includes(k)) return;
+    if(k==="bags" && incBags) return;
+    if(!S.addons[k]) return;
+    if(a.cake){ const c=CFG.cakes[S.cakeIdx]; if(c) L.push({n:c.name, v:c.price}); return; }
+    L.push(k==="bags" ? {n:`שקיות הפתעה · ${S.kids} ילדים`, v:a.price*S.kids} : {n:a.name, v:a.price});
+  });
+  if(isSurcharge()) L.push({n:"תוספת שבת / חג",v:CFG.weekendFee});
+  return {lines:L,total:L.reduce((s,l)=>s+l.v,0)};
+}
+
+function render(){
+  renderAddons();
+  renderSlots();
+  checkAvail();
+  renderScarcity();
+  const {lines,total}=calc();
+  if(!S.tier){
+    $("#lines").innerHTML=`<div class="li empty">עדיין לא נבחרה חבילה.</div>`;
+    $("#total").textContent="—"; $("#mTotal").textContent="—"; $("#rest").textContent="—";
+    $("#tHead").textContent="בחרו חבילה כדי להתחיל"; return;
+  }
+  $("#lines").innerHTML = lines.map(l=>`<div class="li ${l.sub?"sub":""}"><span>${l.n}</span><span>${l.quote?"נסגר איתכם":l.v?ils(l.v):"כלול"}</span></div>`).join("");
+  const n = CFG.nudge[S.tier.id], nb = $("#nudge");
+  if(n){
+    nb.style.display="block";
+    nb.innerHTML = `${n.html}<button type="button" id="up">${n.cta} ↑</button>`;
+    $("#up").onclick = ()=>{
+      const el = document.querySelector(`.tier[data-id="${n.to}"]`);
+      el.click(); el.scrollIntoView({behavior:"smooth",block:"center"});
+    };
+  } else nb.style.display="none";
+  $("#total").textContent=ils(total); $("#mTotal").textContent=ils(total);
+  $("#rest").textContent=ils(total-CFG.deposit);
+  const d=$("#date").value, br=$("#branch").value;
+  $("#tHead").textContent = d ? `${new Date(d+"T12:00").toLocaleDateString("he-IL",{day:"numeric",month:"long"})}${S.time?" · "+S.time:""}${br?" · "+br:""}` : S.tier.name;
+  $("#wa").href = waLink(lines,total);
+}
+["date","branch","parent","phone","email","child","notes"].forEach(id=>$("#"+id).addEventListener("input",render));
+$("#date").min = new Date(Date.now()+7*864e5).toISOString().slice(0,10); // מינימום 7 ימים מראש
+
+function summary(lines,total){
+  return ["🎈 הזמנת יום הולדת — גאיהלנד",
+    `שם ההורה: ${$("#parent").value}`,
+    `טלפון: ${$("#phone").value}`,
+    `מייל: ${$("#email").value}`,
+    `שם הילד/ה: ${$("#child").value}`,
+    `סניף: ${$("#branch").value}`,
+    `תאריך: ${$("#date").value} בשעה ${S.time||""}`,
+    `מספר ילדים: ${S.kids}`,
+    "—",
+    ...lines.map(l=>`${l.n}: ${l.v?ils(l.v):"כלול"}`),
+    `סה״כ: ${ils(total)} · מקדמה ${ils(CFG.deposit)} · יתרה ${ils(total-CFG.deposit)}`,
+    $("#notes").value ? `הערות: ${$("#notes").value}` : ""
+  ].filter(Boolean).join("\n");
+}
+function waLink(lines,total){
+  return `https://wa.me/${CFG.whatsapp}?text=`+encodeURIComponent(summary(lines,total));
+}
+
+// ---- validation + booking
+const btn = $("#book");
+btn.onclick = async ()=>{
+  let ok=true;
+  const bad=(id,c)=>{ $("#e-"+id).classList.toggle("on",c); if(c) ok=false; };
+  if(!S.tier){ alert("בחרו קודם חבילה 🎈"); return; }
+  bad("branch", !$("#branch").value);
+  bad("date", !$("#date").value);
+  bad("time", !S.time);
+  bad("parent", !$("#parent").value.trim());
+  bad("phone", !/^0\d{1,2}-?\d{7}$/.test($("#phone").value.replace(/\s/g,"")));
+  bad("email", !/^\S+@\S+\.\S+$/.test($("#email").value));
+  if(!ok){ document.querySelector(".err.on").scrollIntoView({behavior:"smooth",block:"center"}); return; }
+  if(!checkAvail()){ $("#availMsg").scrollIntoView({behavior:"smooth",block:"center"}); return; }
+
+  const {lines,total}=calc();
+  const payload = {
+    parent:$("#parent").value, phone:$("#phone").value, email:$("#email").value,
+    child:$("#child").value, branch:$("#branch").value, date:$("#date").value, time:S.time,
+    notes:$("#notes").value, kids:S.kids, tier:S.tier.name, total:total, deposit:CFG.deposit,
+    addons: lines.slice(1).filter(l=>l.v||l.sub).map(l=>l.n).join(", ")
+  };
+
+  btn.disabled = true; btn.textContent = "שומרים את התאריך…";
+  try{
+    if(CFG.api){
+      const r = await fetch(CFG.api, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(payload)});
+      const res = await r.json();
+      if(!res.ok){
+        if(res.error==="taken"){ await loadAvail(); alert("התאריך הזה נתפס בדיוק עכשיו. בחרו תאריך אחר."); }
+        else alert("השמירה נכשלה. שלחו לנו את הפרטים בוואטסאפ ונסגור ידנית.");
+        btn.disabled=false; btn.textContent="לתשלום מקדמה ונעילת התאריך"; return;
+      }
+    }else{
+      window.open(waLink(lines,total),"_blank");   // עוד אין API — נשלח בוואטסאפ
+    }
+    const payWin = window.open(CFG.nayaxDeposit,"_blank");
+    if(!payWin || payWin.closed || typeof payWin.closed==="undefined"){
+      showPayFallback(CFG.nayaxDeposit);          // הדפדפן חסם את הפופ-אפ
+    }else{
+      btn.textContent = "התאריך נשמר · השלימו את המקדמה בחלון שנפתח";
+      showPayFallback(CFG.nayaxDeposit, true);    // קישור גיבוי תמיד זמין
+    }
+    await loadAvail();
+  }catch(e){
+    alert("משהו השתבש. שלחו לנו את הפרטים בוואטסאפ ונסגור ידנית.");
+    btn.disabled=false; btn.textContent="לתשלום מקדמה ונעילת התאריך";
+  }
+};
+
+// mobile ticket
+$("#toggle").onclick = ()=> $("#ticket").classList.toggle("open");
+
+// חזרה מוצלחת מדף התשלום של Nayax (Redirect URL → ?paid=1)
+if(new URLSearchParams(location.search).get("paid")==="1"){
+  document.body.insertAdjacentHTML("afterbegin",
+    `<div style="background:#EAF3E4;border-bottom:2px solid #7C8B5E;padding:16px 20px;text-align:center;font-weight:700;color:#5E6B45;font-size:17px">
+       ✅ התשלום התקבל והתאריך שלכם נשמר! נשלח לכם אישור למייל. נתראה בגאיהלנד 🎈
+     </div>`);
+  window.scrollTo(0,0);
+}
+
+render();
+
+
+/* ── גיבוי אם חלון התשלום נחסם / נסגר בטעות ── */
+function showPayFallback(url, soft){
+  if(document.getElementById("pay-fallback")) return;
+  const box=document.createElement("div");
+  box.id="pay-fallback";
+  box.style.cssText="position:fixed;inset:0;background:rgba(30,25,20,.72);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px";
+  box.innerHTML='<div style="background:#fff;border-radius:22px;padding:26px;max-width:430px;text-align:center;font-family:inherit;box-shadow:0 20px 60px rgba(0,0,0,.25)">'+
+    '<div style="font-size:36px;margin-bottom:8px">'+(soft?"💳":"⚠️")+'</div>'+
+    '<h3 style="margin:0 0 8px;font-size:19px;color:#3C3A34">'+(soft?"התאריך נשמר — נשאר רק לשלם":"חלון התשלום נחסם")+'</h3>'+
+    '<p style="color:#8a7f72;font-size:14px;line-height:1.6;margin:0 0 18px">'+
+      (soft?"אם חלון התשלום לא נפתח או נסגר — אפשר לפתוח אותו שוב כאן.":"הדפדפן חסם את חלון התשלום. פתחו אותו ידנית או התחילו מחדש.")+
+    '</p>'+
+    '<a href="'+url+'" target="_blank" rel="noopener" style="display:block;background:#7C8B5E;color:#fff;padding:15px;border-radius:13px;text-decoration:none;font-weight:800;margin-bottom:9px">פתיחת דף התשלום</a>'+
+    '<button onclick="location.reload()" style="width:100%;background:#fff;border:1.5px solid #e0d8c8;color:#8a7f72;padding:13px;border-radius:13px;font-weight:700;cursor:pointer;font-family:inherit">התחלה מחדש</button>'+
+    '</div>';
+  document.body.appendChild(box);
+}
+
+/* כפתור התחלה מחדש — זמין תמיד, בכל שלב */
+(function(){
+  const b=document.createElement("button");
+  b.textContent="↻ התחלה מחדש";
+  b.onclick=()=>{ if(confirm("לאפס את הטופס ולהתחיל מחדש?")) location.href=location.pathname; };
+  b.style.cssText="position:fixed;bottom:14px;left:14px;z-index:9998;background:#fff;border:1.5px solid #e0d8c8;"+
+    "color:#8a7f72;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;"+
+    "box-shadow:0 4px 14px rgba(0,0,0,.08);font-family:inherit";
+  document.body.appendChild(b);
+})();
+
+} // end initPage
+</script>
+</body>
+</html>

@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>גאיהלנד · ניהול כוח אדם</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Assistant:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F1E8; --surface:#FFFFFF; --surface-2:#FBF8F1;
+  --ink:#33301F; --ink-soft:#6B6650; --line:#E4DCC9;
+  --sage:#7C8F4E; --sage-d:#5E6E38; --sage-l:#EAEEDD;
+  --amber:#C89B3C; --amber-l:#F6EBCF;
+  --coral:#C4574A; --coral-l:#F7DED9;
+  --green-ok:#5B8C57; --green-l:#DCEBD5;
+  --shadow:0 1px 2px rgba(51,48,31,.06),0 8px 24px rgba(51,48,31,.06);
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"Assistant",system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Rubik",sans-serif;margin:0;line-height:1.15}
+button{font-family:inherit;cursor:pointer}
+select,input{font-family:inherit;font-size:14px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 18px 80px}
+
+/* ---- top bar ---- */
+header{position:sticky;top:0;z-index:50;background:rgba(245,241,232,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{max-width:1240px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;font-family:"Rubik";font-weight:800;font-size:19px;letter-spacing:-.3px}
+.brand .dot{width:30px;height:30px;border-radius:9px;background:
+   conic-gradient(from 200deg,var(--sage),var(--amber),var(--coral),var(--sage));
+   box-shadow:inset 0 0 0 3px var(--surface)}
+.brand small{font-family:"Assistant";font-weight:600;color:var(--ink-soft);font-size:12.5px;display:block;letter-spacing:0}
+.tabs{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:11px;border:1px solid var(--line)}
+.tab{border:0;background:transparent;padding:8px 15px;border-radius:8px;font-weight:600;font-size:14px;color:var(--ink-soft)}
+.tab.active{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.spacer{flex:1}
+.month-nav{display:flex;align-items:center;gap:6px}
+.month-nav button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--surface);font-size:17px;color:var(--ink);display:grid;place-items:center}
+.month-nav .m-label{min-width:118px;text-align:center;font-family:"Rubik";font-weight:700;font-size:15px}
+.save-chip{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+.save-chip .d{width:7px;height:7px;border-radius:50%;background:var(--green-ok)}
+
+/* ---- generic ---- */
+.view{display:none;padding-top:22px}
+.view.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.section-h{display:flex;align-items:baseline;gap:10px;margin:2px 0 14px}
+.section-h h2{font-size:20px;font-weight:700}
+.section-h .sub{color:var(--ink-soft);font-size:13.5px}
+.eyebrow{font-family:"Rubik";font-weight:600;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--sage-d)}
+
+/* ---- schedule ---- */
+.legend{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.leg{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 8px;font-size:12.5px;font-weight:600}
+.leg .sw{width:13px;height:13px;border-radius:4px;border:1px solid rgba(0,0,0,.12)}
+.week-grid{display:grid;gap:10px}
+.week-row{display:grid;grid-template-columns:60px 1fr 1fr;gap:6px;align-items:start}
+.week-label{font-family:"Rubik";font-weight:700;font-size:13px;color:var(--ink-soft);padding-top:10px;text-align:center}
+.branch-cols{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.branch-hdr{font-family:"Rubik";font-weight:700;font-size:12px;text-align:center;padding:5px;background:var(--sage-l);border-radius:8px;color:var(--sage-d)}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:7px;display:flex;flex-direction:column;gap:5px;min-height:80px}
+.day.blank{background:transparent;border:0}
+.day.sat{background:var(--amber-l);border-color:#E7D3A0}
+.day.hol{background:var(--coral-l);border-color:#E9C3BD}
+.day.fri{background:var(--surface-2)}
+.day.closed{background:var(--surface-2);opacity:.5}
+.day-top{display:flex;align-items:center;justify-content:space-between;gap:4px;flex-wrap:wrap}
+.day-num{font-family:"Rubik";font-weight:700;font-size:14px;white-space:nowrap}
+.day-num span{font-weight:500;color:var(--ink-soft);font-size:11px;margin-inline-start:3px}
+.day-controls{display:flex;gap:3px}
+.pat-btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;font-size:10px;font-weight:700;padding:2px 5px;color:var(--ink-soft);line-height:1.4;white-space:nowrap}
+.pat-btn.on{background:var(--sage);color:#fff;border-color:var(--sage)}
+.pat-btn.hol-on{background:var(--coral);color:#fff;border-color:var(--coral)}
+.hol-btn{border:1px solid var(--line);background:var(--surface);border-radius:6px;font-size:10px;font-weight:700;padding:2px 5px;color:var(--ink-soft);line-height:1.4}
+.hol-btn.on{background:var(--coral);color:#fff;border-color:var(--coral)}
+.slot{border-radius:8px;padding:3px 4px;border:1px solid transparent;position:relative}
+.slot .tag{font-size:9.5px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:1px}
+.slot select{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:2px 4px;font-weight:600;font-size:11.5px;color:var(--ink);appearance:none}
+.slot.filled{border-color:rgba(0,0,0,.10)}
+.slot.filled select{background:transparent;border-color:transparent}
+.slot.empty select{color:var(--ink-soft);font-style:italic;font-weight:500}
+.slot.warn::after{content:"⚠";position:absolute;top:2px;left:4px;font-size:11px}
+.closed-label{font-size:12px;color:var(--ink-soft);text-align:center;padding:8px 0;font-weight:600}
+
+/* ---- dashboard ---- */
+.grid{display:grid;gap:16px}
+.g-4{grid-template-columns:repeat(4,1fr)}
+.g-2{grid-template-columns:2fr 1fr}
+.stat{padding:16px 18px}
+.stat .k{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+.stat .v{font-family:"Rubik";font-weight:800;font-size:27px;margin-top:3px;letter-spacing:-.5px}
+.stat .foot{font-size:12px;margin-top:4px;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:700}
+.pill.ok{background:var(--green-l);color:#3c6b38}
+.pill.warn{background:var(--amber-l);color:#8a6d1e}
+.pill.bad{background:var(--coral-l);color:#9d3d32}
+.bd{padding:18px}
+.bd h3{font-size:15px;margin-bottom:12px;font-weight:700}
+.bars{display:flex;flex-direction:column;gap:9px}
+.brow{display:grid;grid-template-columns:150px 1fr auto;align-items:center;gap:10px;font-size:13.5px}
+.brow .lbl{font-weight:600}
+.track{height:12px;background:var(--surface-2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.fill{height:100%;border-radius:999px}
+.brow .amt{font-family:"Rubik";font-weight:700;font-size:13px;min-width:74px;text-align:left}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th{font-family:"Rubik";font-weight:600;font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px}
+tbody tr:last-child td{border-bottom:0}
+.namecell{display:flex;align-items:center;gap:8px;font-weight:600}
+.namecell .sw{width:11px;height:11px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.12)}
+td.num{font-family:"Rubik";font-weight:600;text-align:left;direction:ltr}
+.alerts{padding:16px 18px}
+.alert-item{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.alert-item:last-child{border-bottom:0}
+.alert-item .ic{color:var(--coral);font-weight:800}
+
+/* ---- employees / settings ---- */
+.tbl-card{padding:6px 4px}
+.inp{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 9px;width:100%;color:var(--ink)}
+.inp:focus{outline:2px solid var(--sage-l);border-color:var(--sage)}
+.btn{border:1px solid var(--sage-d);background:var(--sage);color:#fff;border-radius:9px;padding:8px 15px;font-weight:700;font-size:14px}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn.mini{padding:5px 10px;font-size:12.5px;font-weight:600}
+.btn.danger{background:var(--surface);color:var(--coral);border-color:var(--coral-l)}
+.row-actions{display:flex;gap:6px}
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:11px}
+.field label{font-size:13px;font-weight:600;color:var(--ink-soft)}
+.field .hint{font-size:11.5px;color:var(--ink-soft);font-weight:400}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px}
+.chip button{border:0;background:transparent;color:var(--coral);font-weight:800;font-size:15px;line-height:1;padding:0}
+.note{background:var(--sage-l);border:1px solid #cdd8b3;border-radius:10px;padding:11px 14px;font-size:13px;color:var(--sage-d);margin-top:6px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.color-swatches{display:flex;gap:5px;flex-wrap:wrap}
+.color-swatches button{width:22px;height:22px;border-radius:6px;border:2px solid transparent}
+.color-swatches button.sel{border-color:var(--ink)}
+
+.sync-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--coral-l);color:#9d3d32}
+.sync-badge.on{background:var(--green-l);color:#3c6b38}
+.sync-status{font-size:13px;font-weight:600;margin-top:8px;min-height:18px}
+.sync-status.ok{color:var(--green-ok)} .sync-status.err{color:var(--coral)} .sync-status.busy{color:var(--amber)}
+.sync-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.sheet-link{font-size:13px;font-weight:700;color:var(--sage-d);text-decoration:none}
+dialog{border:0;border-radius:16px;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.25);max-width:440px;width:92%}
+dialog::backdrop{background:rgba(51,48,31,.4)}
+.dlg-body{padding:22px}
+.dlg-body h3{font-size:18px;margin-bottom:16px}
+@media(max-width:920px){.g-4{grid-template-columns:repeat(2,1fr)}.g-2{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}
+ .week-grid{gap:6px}.week-row{grid-template-columns:40px 1fr;}.branch-cols{grid-template-columns:1fr}.day{min-height:auto}
+ .brow{grid-template-columns:110px 1fr auto}}
+</style>
+</head>
+<body>
+<div id="login-overlay" style="position:fixed;inset:0;z-index:10000;background:linear-gradient(135deg,#7a9e7e,#5a6b5e);display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:20px;padding:40px 36px;max-width:380px;width:100%;box-shadow:0 12px 48px rgba(0,0,0,0.25);text-align:center">
+    <div style="font-size:3rem;margin-bottom:8px">🏡</div>
+    <h1 style="font-size:1.5rem;margin:0 0 6px;color:#5a6b5e">גאיהלנד</h1>
+    <p style="color:#999;font-size:13px;margin:0 0 24px">מערכת ניהול כוח אדם — התחברות</p>
+    <button onclick="doLogin()" style="width:100%;padding:13px;background:#fff;color:#3c4043;border:2px solid #dadce0;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      התחבר עם Google
+    </button>
+    <div id="login-loading" style="display:none;margin-top:14px;color:#999;font-size:13px">מתחבר...</div>
+    <div id="login-error" style="margin-top:14px;color:#c0392b;font-size:13px;min-height:18px"></div>
+  </div>
+</div>
+
+<header>
+ <div class="bar">
+   <div class="brand"><span class="dot"></span><span>גאיהלנד<small>ניהול כוח אדם · קיץ–סתיו 2026</small></span></div>
+   <div class="tabs" id="tabs">
+     <button class="tab active" data-view="schedule">לוח שיבוץ</button>
+     <button class="tab" data-view="dashboard">דשבורד</button>
+     <button class="tab" data-view="employees">עובדות</button>
+     <button class="tab" data-view="settings">הגדרות</button>
+   </div>
+   <div class="spacer"></div>
+   <div class="month-nav" id="monthNav">
+     <button id="prevM">‹</button>
+     <div class="m-label" id="mLabel"></div>
+     <button id="nextM">›</button>
+   </div>
+   <span class="sync-badge" id="syncBadge">לא מחובר</span>
+   <div class="save-chip"><span class="d"></span><span id="saveMsg">נשמר</span></div>
+ </div>
+</header>
+
+<div class="wrap">
+  <!-- SCHEDULE -->
+  <section class="view active" id="view-schedule">
+    <div class="section-h"><span class="eyebrow">שיבוץ</span><h2 id="schTitle"></h2>
+      <span class="sub">בחרו עובדת בכל משמרת — העלות מחושבת אוטומטית ומופיעה בדשבורד</span></div>
+    <div class="legend" id="legend"></div>
+    <div class="week-grid" id="weekGrid">
+      <div class="week-row" style="margin-bottom:2px">
+        <div></div>
+        <div class="branch-cols">
+          <div class="branch-hdr">ראשון לציון</div>
+          <div class="branch-hdr">יבנה</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="view" id="view-dashboard">
+    <div class="section-h"><span class="eyebrow">סקירה</span><h2 id="dashTitle"></h2>
+      <span class="sub">תצוגה בלבד — הנתונים מתעדכנים מהשיבוץ</span></div>
+    <div class="grid g-4" id="stats" style="margin-bottom:16px"></div>
+    <div class="grid g-2" style="margin-bottom:16px">
+      <div class="card bd" id="payBreakdown"></div>
+      <div class="card bd" id="branchSplit"></div>
+    </div>
+    <div class="card bd" style="margin-bottom:16px"><h3>פירוט לפי עובדת</h3><div id="empTable"></div></div>
+    <div class="card alerts" id="alertsCard"></div>
+  </section>
+
+  <!-- EMPLOYEES -->
+  <section class="view" id="view-employees">
+    <div class="section-h"><span class="eyebrow">צוות</span><h2>עובדות</h2>
+      <span class="sub">מקור האמת לשכר, מקדם וצבע — שינוי כאן משפיע על כל המערכת</span></div>
+    <div class="toolbar"><button class="btn" id="addEmp">+ עובדת חדשה</button></div>
+    <div class="card tbl-card"><div id="empManage"></div></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="view" id="view-settings">
+    <div class="section-h"><span class="eyebrow">כללי</span><h2>הגדרות</h2></div>
+    <div class="settings-grid">
+      <div class="card bd"><h3>יעדים ומקדמים</h3><div id="setTargets"></div></div>
+      <div class="card bd"><h3>פילוח עלות מעביד (אומדן)</h3><div id="setPayroll"></div>
+        <div class="note">האחוזים הם אומדן להערכת תזרים בלבד — כדאי לאמת מול רואה החשבון לפני החלטות שכר.</div></div>
+    </div>
+    <div class="card bd" style="margin-top:16px"><h3>ימי חג ומועדים (150%)</h3>
+      <p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px">כל משמרת בתאריך חג תחושב אוטומטית ב־150%. אפשר גם לסמן יום בודד ישירות בלוח.</p>
+      <div class="toolbar"><input type="date" class="inp" id="holDate" style="max-width:180px"><input class="inp" id="holName" placeholder="שם החג (למשל ראש השנה)" style="max-width:220px"><button class="btn mini" id="addHol">הוספה</button></div>
+      <div class="chips" id="holChips"></div>
+    </div>
+    <div class="card bd" style="margin-top:16px"><h3>סנכרון Google Sheets</h3>
+      <p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px">שינוי באפליקציה נשמר אוטומטית לגיליון, וגם מושך שינויים שעדי עשתה. בהתחברות הראשונה נוצר גיליון חדש בחשבון שלך.</p>
+      <div class="field" style="display:none"><label>Google OAuth Client ID</label>
+        <input class="inp" id="clientIdInput"></div>
+        <p style="font-size:12.5px;color:var(--ink-soft);margin:0 0 8px">מחובר/ת אוטומטית עם חשבון הגוגל שאיתו נכנסת. אין צורך להזין Client ID.</p>
+      <div class="sync-row">
+        <button class="btn" id="connectBtn">התחבר ל־Google</button>
+        <button class="btn ghost" id="disconnectBtn" style="display:none">התנתק</button>
+        <button class="btn ghost" id="pullBtn">משוך עדכונים מהגיליון</button>
+        <label style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:600"><input type="checkbox" id="autoSyncChk" style="width:auto"> שמירה אוטומטית</label>
+        <a class="sheet-link" id="sheetLink" target="_blank" style="display:none">פתח את הגיליון ↗</a>
+      </div>
+      <div class="sync-status" id="syncStatus"></div>
+    </div>
+    <div class="card bd" style="margin-top:16px"><h3>נתונים</h3>
+      <div class="toolbar">
+        <button class="btn ghost" id="exportJson">גיבוי נתונים (JSON)</button>
+        <button class="btn ghost" id="importJson">שחזור מגיבוי</button>
+        <button class="btn" id="exportXlsx">עדכון לקובץ Excel (מערכת מלאה)</button>
+        <button class="btn ghost" id="exportCsv">ייצוא החודש ל־CSV</button>
+        <button class="btn danger" id="resetAll">איפוס לברירת מחדל</button>
+      </div>
+      <input type="file" id="fileInput" accept="application/json" style="display:none">
+    </div>
+  </section>
+</div>
+
+<dialog id="empDlg"><div class="dlg-body"><h3 id="dlgTitle">עובדת</h3>
+  <div class="field"><label>שם</label><input class="inp" id="e_name"></div>
+  <div class="field"><label>סניף</label><select class="inp" id="e_branch"><option>ראשון</option><option>יבנה</option></select></div>
+  <div class="field"><label>סוג</label><select class="inp" id="e_type"><option>בוגרת</option><option>נוער</option><option>בעלים</option><option>גלובלית</option></select></div>
+  <div class="field"><label>שכר שעתי (₪)</label><input class="inp" id="e_rate" type="number" step="0.5"></div>
+  <div class="field"><label>מקדם מעביד</label><input class="inp" id="e_coeff" type="number" step="0.05"><span class="hint">בוגרת ≈ 1.3, נוער ≈ 1.1</span></div>
+  <div class="field"><label>עלות קבועה חודשית (₪)</label><input class="inp" id="e_fixed" type="number" step="100"><span class="hint">רק לעובדי עלות קבועה (עדי / גלובלית). אחרת 0.</span></div>
+  <div class="field"><label>צבע</label><div class="color-swatches" id="e_colors"></div></div>
+  <div class="field"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="e_active" style="width:auto"> פעילה</label></div>
+  <div class="row-actions" style="justify-content:flex-end;margin-top:8px">
+    <button class="btn ghost" id="dlgCancel">ביטול</button>
+    <button class="btn" id="dlgSave">שמירה</button>
+  </div>
+</div></dialog>
+
+<script>
+const SEED = {"employees": [["עדי", "יבנה", "בעלים", 0.0, 0.0, 16500.0, "עלות קבועה בדשבורד", "כן"], ["גלובלית ראשון", "ראשון", "גלובלית", 0.0, 0.0, 13000.0, "עלות קבועה בדשבורד", "כן"], ["עובדת 60", "יבנה", "בוגרת", 60.0, 1.3, 0.0, "גיבוי בלבד", "כן"], ["עובדת 50", "יבנה", "בוגרת", 50.0, 1.3, 0.0, "רוב הערבים ביבנה", "כן"], ["עובדת 50 שבת", "יבנה", "בוגרת", 50.0, 1.3, 0.0, "רק שבתות", "כן"], ["נוער ראשון 1", "ראשון", "נוער", 45.0, 1.1, 0.0, "ערבים/שישי/שבת", "כן"], ["נוער ראשון 2", "ראשון", "נוער", 45.0, 1.1, 0.0, "ערבים/שישי/שבת", "כן"], ["נוער יבנה 1", "יבנה", "נוער", 45.0, 1.1, 0.0, "ערבים/שישי/שבת", "כן"], ["נוער יבנה 2", "יבנה", "נוער", 45.0, 1.1, 0.0, "ערבים/שישי/שבת", "כן"]], "months": {"2026-07": [["2026-07-01", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-01", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-01", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-01", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-02", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-02", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-02", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-02", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 60"], ["2026-07-03", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 1"], ["2026-07-03", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "עובדת 50"], ["2026-07-04", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-04", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "גלובלית ראשון"], ["2026-07-04", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "עובדת 50 שבת"], ["2026-07-04", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "עובדת 50 שבת"], ["2026-07-05", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-05", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-05", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-05", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-06", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-06", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-06", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-06", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-07", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-07", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-07", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-07", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-08", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-08", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-08", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-08", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-09", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-09", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-09", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-09", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 60"], ["2026-07-10", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 1"], ["2026-07-10", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "עובדת 50"], ["2026-07-11", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-11", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "גלובלית ראשון"], ["2026-07-11", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "עובדת 50 שבת"], ["2026-07-11", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "עובדת 50 שבת"], ["2026-07-12", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-12", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-12", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-12", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-13", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-13", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-13", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-13", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-14", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-14", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-14", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-14", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-15", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-15", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-15", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-15", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-16", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-16", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-16", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-16", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 60"], ["2026-07-17", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 1"], ["2026-07-17", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "עובדת 50"], ["2026-07-18", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "נוער ראשון 2"], ["2026-07-18", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "נוער ראשון 2"], ["2026-07-18", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "נוער יבנה 1"], ["2026-07-18", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "נוער יבנה 1"], ["2026-07-19", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-19", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-19", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-19", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-20", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-20", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-20", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-20", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-21", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-21", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-21", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-21", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-22", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-22", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-22", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-22", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-07-23", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-23", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-23", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-23", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 60"], ["2026-07-24", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 2"], ["2026-07-24", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "נוער יבנה 2"], ["2026-07-25", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "נוער ראשון 1"], ["2026-07-25", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "נוער ראשון 1"], ["2026-07-25", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "נוער יבנה 1"], ["2026-07-25", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "נוער יבנה 1"], ["2026-07-26", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-26", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-26", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-26", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 2"], ["2026-07-27", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-27", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-27", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-27", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 1"], ["2026-07-28", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-28", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-28", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-07-28", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 2"], ["2026-07-29", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-29", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-07-29", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עובדת 50"], ["2026-07-29", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 1"], ["2026-07-30", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-07-30", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-07-30", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עובדת 50"], ["2026-07-30", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 2"], ["2026-07-31", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 1"], ["2026-07-31", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "נוער יבנה 1"]], "2026-08": [["2026-08-01", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-01", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "גלובלית ראשון"], ["2026-08-01", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "עובדת 50 שבת"], ["2026-08-01", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "עובדת 50 שבת"], ["2026-08-02", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-02", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-02", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-02", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-03", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-03", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-03", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-03", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-04", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-04", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-04", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-04", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-05", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-05", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-05", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-05", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-06", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-06", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-06", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-06", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 60"], ["2026-08-07", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 2"], ["2026-08-07", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "עובדת 50"], ["2026-08-08", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-08", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "גלובלית ראשון"], ["2026-08-08", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "עובדת 50 שבת"], ["2026-08-08", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "עובדת 50 שבת"], ["2026-08-09", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-09", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-09", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-09", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-10", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-10", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-10", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-10", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-11", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-11", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-11", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-11", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-12", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-12", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-12", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-12", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-13", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-13", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-13", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-13", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 60"], ["2026-08-14", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 2"], ["2026-08-14", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "עובדת 50"], ["2026-08-15", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "נוער ראשון 1"], ["2026-08-15", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "נוער ראשון 1"], ["2026-08-15", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "נוער יבנה 1"], ["2026-08-15", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "נוער יבנה 1"], ["2026-08-16", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-16", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-16", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-16", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-17", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-17", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-17", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-17", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-18", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-18", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-18", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-18", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-19", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-19", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-19", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-19", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-20", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-20", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-20", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-20", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 60"], ["2026-08-21", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 1"], ["2026-08-21", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "עובדת 50"], ["2026-08-22", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "נוער ראשון 2"], ["2026-08-22", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "נוער ראשון 2"], ["2026-08-22", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "נוער יבנה 2"], ["2026-08-22", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "נוער יבנה 2"], ["2026-08-23", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-23", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-23", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-23", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 50"], ["2026-08-24", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-24", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-24", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-24", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 1"], ["2026-08-25", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-25", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-25", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-25", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 2"], ["2026-08-26", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-26", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-26", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-26", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 1"], ["2026-08-27", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-27", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-27", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עדי"], ["2026-08-27", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, "עובדת 60"], ["2026-08-28", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, "נוער ראשון 2"], ["2026-08-28", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, "נוער יבנה 2"], ["2026-08-29", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, "נוער ראשון 1"], ["2026-08-29", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, "נוער ראשון 1"], ["2026-08-29", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, "נוער יבנה 1"], ["2026-08-29", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, "נוער יבנה 1"], ["2026-08-30", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-30", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 2"], ["2026-08-30", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עובדת 50"], ["2026-08-30", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 2"], ["2026-08-31", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, "גלובלית ראשון"], ["2026-08-31", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, "נוער ראשון 1"], ["2026-08-31", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, "עובדת 50"], ["2026-08-31", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, "נוער יבנה 1"]], "2026-09": [["2026-09-01", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-01", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-01", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-01", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-02", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-02", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-02", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-02", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-03", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-03", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-03", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-03", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-04", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-09-04", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-09-05", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-09-05", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-09-05", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-09-05", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-09-06", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-06", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-06", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-06", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-07", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-07", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-07", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-07", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-08", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-08", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-08", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-08", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-09", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-09", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-09", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-09", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-10", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-10", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-10", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-10", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-11", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-09-11", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-09-12", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-09-12", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-09-12", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-09-12", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-09-13", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-13", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-13", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-13", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-14", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-14", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-14", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-14", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-15", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-15", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-15", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-15", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-16", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-16", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-16", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-16", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-17", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-17", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-17", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-17", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-18", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-09-18", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-09-19", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-09-19", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-09-19", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-09-19", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-09-20", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-20", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-20", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-20", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-21", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-21", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-21", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-21", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-22", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-22", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-22", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-22", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-23", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-23", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-23", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-23", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-24", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-24", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-24", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-24", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-25", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-09-25", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-09-26", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-09-26", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-09-26", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-09-26", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-09-27", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-27", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-27", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-27", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-28", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-28", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-28", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-28", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-29", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-29", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-29", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-29", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-30", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-30", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-09-30", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-09-30", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""]], "2026-10": [["2026-10-01", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-01", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-01", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-01", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-02", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-02", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-03", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-03", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-03", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-03", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-04", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-04", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-04", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-04", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-05", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-05", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-05", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-05", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-06", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-06", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-06", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-06", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-07", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-07", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-07", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-07", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-08", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-08", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-08", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-08", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-09", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-09", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-10", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-10", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-10", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-10", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-11", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-11", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-11", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-11", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-12", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-12", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-12", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-12", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-13", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-13", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-13", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-13", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-14", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-14", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-14", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-14", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-15", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-15", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-15", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-15", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-16", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-16", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-17", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-17", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-17", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-17", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-18", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-18", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-18", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-18", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-19", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-19", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-19", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-19", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-20", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-20", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-20", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-20", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-21", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-21", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-21", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-21", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-22", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-22", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-22", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-22", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-23", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-23", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-24", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-24", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-24", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-24", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-25", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-25", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-25", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-25", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-26", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-26", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-26", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-26", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-27", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-27", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-27", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-27", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-28", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-28", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-28", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-28", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-29", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-29", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-29", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-10-29", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-10-30", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-30", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-10-31", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-31", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-10-31", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-10-31", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""]], "2026-11": [["2026-11-01", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-01", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-01", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-01", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-02", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-02", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-02", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-02", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-03", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-03", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-03", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-03", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-04", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-04", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-04", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-04", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-05", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-05", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-05", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-05", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-06", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-11-06", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-11-07", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-11-07", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-11-07", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-11-07", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-11-08", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-08", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-08", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-08", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-09", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-09", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-09", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-09", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-10", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-10", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-10", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-10", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-11", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-11", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-11", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-11", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-12", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-12", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-12", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-12", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-13", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-11-13", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-11-14", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-11-14", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-11-14", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-11-14", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-11-15", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-15", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-15", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-15", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-16", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-16", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-16", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-16", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-17", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-17", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-17", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-17", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-18", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-18", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-18", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-18", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-19", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-19", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-19", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-19", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-20", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-11-20", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-11-21", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-11-21", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-11-21", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-11-21", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-11-22", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-22", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-22", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-22", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-23", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-23", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-23", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-23", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-24", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-24", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-24", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-24", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-25", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-25", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-25", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-25", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-26", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-26", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-26", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-26", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-27", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-11-27", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-11-28", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-11-28", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-11-28", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-11-28", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-11-29", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-29", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-29", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-29", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-30", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-30", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-11-30", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-11-30", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""]], "2026-12": [["2026-12-01", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-01", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-01", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-01", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-02", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-02", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-02", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-02", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-03", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-03", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-03", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-03", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-04", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-12-04", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-12-05", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-12-05", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-12-05", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-12-05", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-12-06", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-06", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-06", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-06", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-07", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-07", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-07", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-07", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-08", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-08", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-08", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-08", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-09", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-09", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-09", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-09", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-10", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-10", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-10", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-10", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-11", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-12-11", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-12-12", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-12-12", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-12-12", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-12-12", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-12-13", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-13", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-13", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-13", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-14", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-14", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-14", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-14", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-15", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-15", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-15", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-15", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-16", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-16", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-16", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-16", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-17", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-17", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-17", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-17", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-18", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-12-18", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-12-19", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-12-19", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-12-19", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-12-19", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-12-20", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-20", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-20", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-20", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-21", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-21", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-21", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-21", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-22", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-22", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-22", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-22", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-23", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-23", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-23", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-23", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-24", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-24", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-24", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-24", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-25", "שישי", "ראשון", "שישי", "09:00", "13:00", 4.0, ""], ["2026-12-25", "שישי", "יבנה", "שישי", "09:00", "13:00", 4.0, ""], ["2026-12-26", "שבת", "ראשון", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-12-26", "שבת", "ראשון", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-12-26", "שבת", "יבנה", "שבת א׳", "09:00", "14:00", 5.0, ""], ["2026-12-26", "שבת", "יבנה", "שבת ב׳", "14:00", "17:00", 3.0, ""], ["2026-12-27", "ראשון", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-27", "ראשון", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-27", "ראשון", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-27", "ראשון", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-28", "שני", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-28", "שני", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-28", "שני", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-28", "שני", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-29", "שלישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-29", "שלישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-29", "שלישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-29", "שלישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-30", "רביעי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-30", "רביעי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-30", "רביעי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-30", "רביעי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-31", "חמישי", "ראשון", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-31", "חמישי", "ראשון", "ערב", "14:00", "19:00", 5.0, ""], ["2026-12-31", "חמישי", "יבנה", "בוקר", "09:00", "14:00", 5.0, ""], ["2026-12-31", "חמישי", "יבנה", "ערב", "14:00", "19:00", 5.0, ""]]}};
+const PALETTE = ["EAD7C3","D6E2E9","F5E6C8","DCE8D2","E6D9E8","FBE3CF","F7EFC9","D3E7E1","EAD9D3","D9E4F0","F0E0D0","E0EDE0"];
+const HEB_MONTHS = {1:"ינואר",2:"פברואר",3:"מרץ",4:"אפריל",5:"מאי",6:"יוני",7:"יולי",8:"אוגוסט",9:"ספטמבר",10:"אוקטובר",11:"נובמבר",12:"דצמבר"};
+const DOW = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+const SHIFT_ORDER = {"בוקר":0,"ערב":1,"שישי":2,"שבת":3};
+const KEY = "gayaland_hr_v1";
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+const DEFAULT_SETTINGS = {
+  targetLow:35000, targetHigh:40000, satMult:1.5,
+  payroll:{
+    bogeret:{net:0.85, ni:3.55, pension:6.5, severance:8.33},
+    noar:{net:0.92, ni:0.5, pension:0, severance:0}
+  }
+};
+
+let db, curYM;
+
+/* ---------- persistence ---------- */
+function load(){
+  let raw=null; try{raw=localStorage.getItem(KEY)}catch(e){}
+  if(raw){try{db=JSON.parse(raw)}catch(e){db=null}}
+  if(!db){ db=freshDb(); save(); }
+  if(!db.settings) db.settings=clone(DEFAULT_SETTINGS);
+  if(!db.holidays) db.holidays=[];
+  if(!db.dayPatterns) db.dayPatterns={};
+}
+function freshDb(){
+  const employees = SEED.employees.map((e,i)=>({
+    id:"emp"+i, name:e[0], branch:e[1], type:e[2], rate:e[3], coeff:e[4],
+    fixed:e[5], notes:e[6], active:e[7]==="כן",
+    color:PALETTE[i%PALETTE.length]
+  }));
+  const months={};
+  for(const [ym,rows] of Object.entries(SEED.months)){
+    months[ym]=rows.map(r=>({date:r[0],day:r[1],branch:r[2],shift:r[3],start:r[4],end:r[5],hours:r[6],emp:r[7]||"",hol:false}));
+  }
+  return {employees,months,settings:clone(DEFAULT_SETTINGS),holidays:[],dayPatterns:{}};
+}
+let saveTimer;
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}
+  const el=document.getElementById("saveMsg"); if(el){el.textContent="נשמר ✓";clearTimeout(saveTimer);saveTimer=setTimeout(()=>el.textContent="נשמר",1400);}
+}
+function empByName(n){return db.employees.find(e=>e.name===n)}
+function ymList(){return Object.keys(db.months).sort()}
+
+/* ---------- calc ---------- */
+function isHoliday(dateStr){return db.holidays.some(h=>h.date===dateStr)}
+function shiftMult(s){ // s = shift row
+  if(s.shift.indexOf("שבת")===0||s.hol||isHoliday(s.date)) return db.settings.satMult;
+  return 1;
+}
+function shiftCost(s){
+  const e=empByName(s.emp); if(!e||!e.active) return {gross:0,cost:0};
+  const g=(s.hours||0)*(e.rate||0)*shiftMult(s);
+  return {gross:g, cost:g*(e.coeff||0)};
+}
+function monthAgg(ym){
+  const rows=db.months[ym]||[];
+  let shifts=0,hours=0,gross=0,cost=0,satHours=0;
+  const perEmp={}, perBranch={"ראשון":0,"יבנה":0};
+  const alerts=[];
+  for(const s of rows){
+    if(!s.emp) continue;
+    const e=empByName(s.emp);
+    shifts++; hours+=s.hours||0;
+    const c=shiftCost(s); gross+=c.gross; cost+=c.cost;
+    if(shiftMult(s)>1) satHours+=s.hours||0;
+    perBranch[s.branch]=(perBranch[s.branch]||0)+c.cost;
+    if(!perEmp[s.emp]) perEmp[s.emp]={shifts:0,hours:0,gross:0,cost:0};
+    perEmp[s.emp].shifts++; perEmp[s.emp].hours+=s.hours||0;
+    perEmp[s.emp].gross+=c.gross; perEmp[s.emp].cost+=c.cost;
+    // compliance
+    if(!e) alerts.push({d:s.date,t:`עובדת לא מוגדרת: "${s.emp}" (${s.branch} ${s.shift})`});
+    else{
+      if(e.type==="נוער" && s.shift.indexOf("שבת")===0) alerts.push({d:s.date,t:`${e.name} — נוער בשבת (אסור לפי חוק עבודת הנוער)`});
+      if(e.type==="נוער" && (s.hours||0)>8) alerts.push({d:s.date,t:`${e.name} — מעל 8 שעות לנוער`});
+      if(!e.active) alerts.push({d:s.date,t:`${e.name} — עובדת לא פעילה`});
+    }
+  }
+  // fixed costs
+  let fixed=0; const perBranchFixed={"ראשון":0,"יבנה":0};
+  for(const e of db.employees){ if(e.active && e.fixed>0){ fixed+=e.fixed; perBranchFixed[e.branch]=(perBranchFixed[e.branch]||0)+e.fixed; } }
+  return {rows,shifts,hours,gross,cost,satHours,perEmp,perBranch,perBranchFixed,fixed,alerts,total:cost+fixed};
+}
+function payrollBreakdown(ym){
+  // decompose hourly gross across staff by type
+  const rows=db.months[ym]||[];
+  let net=0,deduct=0,ni=0,pension=0,severance=0,other=0,cost=0,gross=0;
+  for(const s of rows){
+    if(!s.emp) continue; const e=empByName(s.emp); if(!e||!e.active||e.fixed>0) continue;
+    const c=shiftCost(s); if(c.gross<=0) continue;
+    const p = e.type==="נוער"?db.settings.payroll.noar:db.settings.payroll.bogeret;
+    const g=c.gross, tot=c.cost;
+    const n=g*p.net; net+=n; deduct+=g-n;
+    const eni=g*p.ni/100, epen=g*p.pension/100, esev=g*p.severance/100;
+    ni+=eni; pension+=epen; severance+=esev;
+    other+=Math.max(0, tot-g-eni-epen-esev);
+    cost+=tot; gross+=g;
+  }
+  return {net,deduct,ni,pension,severance,other,cost,gross};
+}
+const nis=n=>"₪"+Math.round(n).toLocaleString("en-US");
+const nis1=n=>"₪"+(Math.round(n*10)/10).toLocaleString("en-US");
+
+/* ---------- render: schedule ---------- */
+function renderLegend(){
+  const el=document.getElementById("legend"); el.innerHTML="";
+  db.employees.filter(e=>e.active).forEach(e=>{
+    const d=document.createElement("div"); d.className="leg";
+    d.innerHTML=`<span class="sw" style="background:#${e.color}"></span>${e.name}`;
+    el.appendChild(d);
+  });
+}
+function slotHtml(s,idx,hideBranch){
+  const e=empByName(s.emp);
+  const filled=!!s.emp;
+  let warn=false;
+  if(e){ if((e.type==="נוער"&&s.shift.indexOf("שבת")===0)||(e.type==="נוער"&&s.hours>8)||!e.active) warn=true; }
+  else if(s.emp) warn=true;
+  const bg = e? "#"+e.color : "transparent";
+  const opts = ['<option value="">— שבצו —</option>'].concat(
+    db.employees.filter(x=>x.active).map(x=>`<option ${x.name===s.emp?"selected":""}>${x.name}</option>`)
+  ).join("");
+  const timeTag = s.start&&s.end ? `${s.start}–${s.end}` : s.shift;
+  return `<div class="slot ${filled?'filled':'empty'} ${warn?'warn':''}" style="background:${filled?bg:'var(--surface-2)'}">
+     <span class="tag">${timeTag}</span>
+     <select data-idx="${idx}">${opts}</select></div>`;
+}
+function renderSchedule(){
+  document.getElementById("schTitle").textContent=labelYM(curYM);
+  renderLegend();
+  const grid=document.getElementById("weekGrid");
+  while(grid.children.length>1) grid.removeChild(grid.lastChild);
+
+  const [y,m]=curYM.split("-").map(Number);
+  const rows=db.months[curYM]||[];
+  const byDate={};
+  rows.forEach((s,i)=>{
+    if(!byDate[s.date])byDate[s.date]={};
+    if(!byDate[s.date][s.branch])byDate[s.date][s.branch]=[];
+    byDate[s.date][s.branch].push({s,i});
+  });
+  const daysInMonth=new Date(y,m,0).getDate();
+
+  function getPattern(ds,wd){
+    if(db.dayPatterns[ds]) return db.dayPatterns[ds];
+    if(wd===5) return "fri";
+    if(wd===6) return "sat";
+    return "full";
+  }
+  function expectedSlots(pat,wd){
+    if(wd===6||pat==="sat") return [{start:"09:00",end:"14:00",hours:5,shift:"שבת א׳"},{start:"14:00",end:"17:00",hours:3,shift:"שבת ב׳"}];
+    if(wd===5||pat==="fri") return [{start:"09:00",end:"13:00",hours:4,shift:"שישי"}];
+    if(pat==="break") return [{start:"09:00",end:"13:00",hours:4,shift:"09:00–13:00"},{start:"16:00",end:"19:00",hours:3,shift:"16:00–19:00"}];
+    return [{start:"09:00",end:"14:00",hours:5,shift:"09:00–14:00"},{start:"14:00",end:"19:00",hours:5,shift:"14:00–19:00"}];
+  }
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dt=new Date(y,m-1,d);
+    const wd=dt.getDay();
+    const ds=`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const hol=isHoliday(ds);
+    const pat=getPattern(ds,wd);
+    const exp=expectedSlots(pat,wd);
+
+    // outer wrapper
+    const wrap=document.createElement("div");
+    wrap.style.cssText="margin-bottom:8px";
+
+    // top bar: pattern btns + חג (spans full width)
+    const topBar=document.createElement("div");
+    topBar.className="day-top";
+    topBar.style.cssText="display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:0 2px";
+    // date label
+    const dateEl=document.createElement("div");
+    dateEl.className="day-num";
+    dateEl.innerHTML=`${d} <span>${DOW[wd]}</span>`;
+    topBar.appendChild(dateEl);
+    // pattern buttons (א-ה only)
+    if(wd>=0&&wd<=4){
+      ["full","break","closed"].forEach(val=>{
+        const label=val==="full"?"מלא":val==="break"?"הפסקה":"סגור";
+        const cur=db.dayPatterns[ds]||"full";
+        const b=document.createElement("button");
+        b.className="pat-btn"+(cur===val?" on":"");
+        b.textContent=label;
+        b.dataset.pat=ds; b.dataset.val=val;
+        topBar.appendChild(b);
+      });
+    }
+    // spacer
+    const sp=document.createElement("span"); sp.style.flex="1"; topBar.appendChild(sp);
+    // חג button
+    const holB=document.createElement("button");
+    holB.className="hol-btn"+(hol?" on":"");
+    holB.dataset.hol=ds;
+    holB.textContent=hol?"חג ✓":"חג";
+    topBar.appendChild(holB);
+    wrap.appendChild(topBar);
+
+    // two branch columns
+    const cols=document.createElement("div");
+    cols.className="branch-cols";
+
+    if(pat==="closed"&&wd<=4){
+      ["ראשון","יבנה"].forEach(branch=>{
+        const cell=document.createElement("div");
+        cell.className="day closed";
+        cell.innerHTML=`<div class="closed-label">סגור</div>`;
+        cols.appendChild(cell);
+      });
+    } else {
+      ["ראשון","יבנה"].forEach(branch=>{
+        const cell=document.createElement("div");
+        let cls="day";
+        if(wd===6||pat==="sat") cls+=" sat";
+        else if(wd===5||pat==="fri") cls+=" fri";
+        if(hol) cls+=" hol";
+        cell.className=cls;
+        const existing=(byDate[ds]&&byDate[ds][branch])||[];
+        exp.forEach((ex,ei)=>{
+          const match=existing.find(o=>o.s.start===ex.start)||existing[ei];
+          if(match){
+            if(match.s.start!==ex.start||match.s.end!==ex.end){match.s.start=ex.start;match.s.end=ex.end;match.s.hours=ex.hours;match.s.shift=ex.shift;}
+            cell.insertAdjacentHTML("beforeend",slotHtml(match.s,match.i));
+          } else {
+            const phantom={date:ds,day:DOW[wd],branch,shift:ex.shift,start:ex.start,end:ex.end,hours:ex.hours,emp:"",hol:false};
+            cell.insertAdjacentHTML("beforeend",slotHtml(phantom,"new:"+ds+":"+branch+":"+ei));
+          }
+        });
+        cols.appendChild(cell);
+      });
+    }
+    wrap.appendChild(cols);
+    grid.appendChild(wrap);
+  }
+
+  // events
+  grid.querySelectorAll("[data-pat]").forEach(b=>{
+    b.onclick=()=>{
+      const ds=b.dataset.pat,val=b.dataset.val;
+      if(val==="full") delete db.dayPatterns[ds]; else db.dayPatterns[ds]=val;
+      save(); syncSettings(); renderSchedule();
+    };
+  });
+  grid.querySelectorAll("[data-hol]").forEach(b=>{
+    b.onclick=()=>{const ds=b.dataset.hol;
+      if(isHoliday(ds)) db.holidays=db.holidays.filter(h=>h.date!==ds);
+      else db.holidays.push({date:ds,name:"חג"});
+      save();syncHolidays();renderSchedule();};
+  });
+  grid.querySelectorAll("select[data-idx]").forEach(sel=>{
+    sel.onchange=()=>{
+      const idx=sel.dataset.idx;
+      if(idx.startsWith("new:")){
+        const [,ds,branch,ei]=idx.split(":");
+        const wd2=new Date(ds).getDay();
+        const ex=expectedSlots(getPattern(ds,wd2),wd2)[+ei]||expectedSlots("full",0)[0];
+        const nr={date:ds,day:DOW[wd2],branch,shift:ex.shift,start:ex.start,end:ex.end,hours:ex.hours,emp:sel.value,hol:false};
+        db.months[curYM].push(nr);
+        const ni=db.months[curYM].length-1;
+        save(); syncShift(curYM,ni); renderSchedule();
+      } else {
+        const ix=+idx; db.months[curYM][ix].emp=sel.value;
+        save(); syncShift(curYM,ix); renderSchedule();
+      }
+    };
+  });
+}
+
+/* ---------- render: dashboard ---------- */
+function renderDashboard(){
+  document.getElementById("dashTitle").textContent=labelYM(curYM);
+  const a=monthAgg(curYM), s=db.settings;
+  let statusPill;
+  if(a.cost===0) statusPill=`<span class="pill warn">טרם שובץ</span>`;
+  else if(a.total<=s.targetLow) statusPill=`<span class="pill ok">בתוך היעד</span>`;
+  else if(a.total<=s.targetHigh) statusPill=`<span class="pill warn">מעל היעד הנמוך</span>`;
+  else statusPill=`<span class="pill bad">מעל היעד הגבוה</span>`;
+  document.getElementById("stats").innerHTML=`
+    <div class="card stat"><div class="k">סה״כ עלות מעביד</div><div class="v">${nis(a.total)}</div>
+      <div class="foot">${statusPill} <span style="color:var(--ink-soft)">יעד ${nis(s.targetLow)}</span></div></div>
+    <div class="card stat"><div class="k">שכר שעתי (משתנה)</div><div class="v">${nis(a.cost)}</div>
+      <div class="foot" style="color:var(--ink-soft)">קבועות ${nis(a.fixed)}</div></div>
+    <div class="card stat"><div class="k">משמרות · שעות</div><div class="v">${a.shifts} · ${Math.round(a.hours)}</div>
+      <div class="foot" style="color:var(--ink-soft)">מזה ${Math.round(a.satHours)} ש׳ ב־150%</div></div>
+    <div class="card stat"><div class="k">התראות בקרה</div><div class="v" style="color:${a.alerts.length?'var(--coral)':'var(--green-ok)'}">${a.alerts.length}</div>
+      <div class="foot" style="color:var(--ink-soft)">${a.alerts.length?'דורש טיפול':'הכל תקין'}</div></div>`;
+
+  // payroll breakdown
+  const p=payrollBreakdown(curYM);
+  const parts=[
+    ["נטו לעובדות",p.net,"var(--sage)"],
+    ["ניכויי חובה (מס + ב״ל עובד)",p.deduct,"#B8A45E"],
+    ["ביטוח לאומי מעביד",p.ni,"#8FA5C0"],
+    ["פנסיה מעביד",p.pension,"#C29BC7"],
+    ["פיצויים",p.severance,"#D9A87C"],
+    ["חופשה/הבראה ושאר",p.other,"#A9B98C"]
+  ];
+  const maxp=Math.max(...parts.map(x=>x[1]),1);
+  document.getElementById("payBreakdown").innerHTML=`<h3>כמה אשלם — פילוח השכר המשתנה</h3>
+    <div class="bars">${parts.map(([l,v,c])=>`<div class="brow"><span class="lbl">${l}</span>
+      <div class="track"><div class="fill" style="width:${Math.max(v/maxp*100,v>0?4:0)}%;background:${c}"></div></div>
+      <span class="amt">${nis(v)}</span></div>`).join("")}</div>
+    <div style="margin-top:12px;padding-top:11px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:Rubik;font-weight:700">
+      <span>סה״כ עלות מעביד (משתנה)</span><span>${nis(p.cost)}</span></div>
+    <div style="margin-top:9px;font-size:12.5px;color:var(--ink-soft)">+ עלויות קבועות ${nis(a.fixed)} (עדי + גלובלית) = <b style="color:var(--ink)">${nis(a.total)}</b> סה״כ</div>`;
+
+  // branch split
+  const brs=["ראשון","יבנה"].map(b=>({b,v:(a.perBranch[b]||0)+(a.perBranchFixed[b]||0)}));
+  const maxb=Math.max(...brs.map(x=>x.v),1);
+  document.getElementById("branchSplit").innerHTML=`<h3>פילוח לפי סניף</h3>
+    <div class="bars">${brs.map(x=>`<div class="brow"><span class="lbl">${x.b}</span>
+      <div class="track"><div class="fill" style="width:${x.v/maxb*100}%;background:var(--sage)"></div></div>
+      <span class="amt">${nis(x.v)}</span></div>`).join("")}</div>
+    <div style="margin-top:12px;font-size:12.5px;color:var(--ink-soft)">כולל עלות קבועה משויכת לכל סניף</div>`;
+
+  // per employee
+  const names=Object.keys(a.perEmp).sort((x,y)=>a.perEmp[y].cost-a.perEmp[x].cost);
+  document.getElementById("empTable").innerHTML=`<table><thead><tr>
+    <th>עובד/ת</th><th>משמרות</th><th>שעות</th><th>ברוטו</th><th>עלות מעביד</th></tr></thead><tbody>
+    ${names.map(n=>{const e=empByName(n),d=a.perEmp[n];
+      return `<tr><td><span class="namecell"><span class="sw" style="background:#${e?e.color:'ccc'}"></span>${n}</span></td>
+      <td class="num">${d.shifts}</td><td class="num">${Math.round(d.hours*10)/10}</td>
+      <td class="num">${nis(d.gross)}</td><td class="num">${nis(d.cost)}</td></tr>`}).join("")||
+      `<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:18px">אין שיבוץ עדיין בחודש זה</td></tr>`}
+    </tbody></table>`;
+
+  // alerts
+  const al=document.getElementById("alertsCard");
+  if(a.alerts.length){
+    al.innerHTML=`<h3 style="margin-bottom:10px;color:var(--coral)">התראות בקרה (${a.alerts.length})</h3>`+
+      a.alerts.map(x=>`<div class="alert-item"><span class="ic">⚠</span><span><b>${fmtDate(x.d)}</b> — ${x.t}</span></div>`).join("");
+  } else {
+    al.innerHTML=`<div style="display:flex;align-items:center;gap:9px;color:var(--green-ok);font-weight:600"><span style="font-size:18px">✓</span> אין התראות — השיבוץ תואם לכללי העסקה</div>`;
+  }
+}
+
+/* ---------- render: employees ---------- */
+function renderEmployees(){
+  const el=document.getElementById("empManage");
+  el.innerHTML=`<table><thead><tr><th>עובד/ת</th><th>סניף</th><th>סוג</th><th>שכר</th><th>מקדם</th><th>קבועה</th><th>סטטוס</th><th></th></tr></thead><tbody>
+  ${db.employees.map(e=>`<tr>
+    <td><span class="namecell"><span class="sw" style="background:#${e.color}"></span>${e.name}</span></td>
+    <td>${e.branch}</td><td>${e.type}</td>
+    <td class="num">${e.rate?nis(e.rate):"—"}</td><td class="num">${e.coeff||"—"}</td>
+    <td class="num">${e.fixed?nis(e.fixed):"—"}</td>
+    <td>${e.active?'<span class="pill ok">פעילה</span>':'<span class="pill bad">לא פעילה</span>'}</td>
+    <td><div class="row-actions"><button class="btn mini ghost" data-edit="${e.id}">עריכה</button>
+      <button class="btn mini danger" data-del="${e.id}">מחיקה</button></div></td></tr>`).join("")}
+  </tbody></table>`;
+  el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEmpDlg(b.dataset.edit));
+  el.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    const e=db.employees.find(x=>x.id===b.dataset.del);
+    if(confirm(`למחוק את ${e.name}? שיבוצים קיימים יישארו אך ללא חישוב.`)){
+      db.employees=db.employees.filter(x=>x.id!==b.dataset.del);save();syncEmployees();renderEmployees();}
+  });
+}
+let editingId=null;
+function openEmpDlg(id){
+  editingId=id;
+  const e=id?db.employees.find(x=>x.id===id):{name:"",branch:"ראשון",type:"בוגרת",rate:50,coeff:1.3,fixed:0,active:true,color:PALETTE[db.employees.length%PALETTE.length]};
+  document.getElementById("dlgTitle").textContent=id?"עריכת עובדת":"עובדת חדשה";
+  e_name.value=e.name; e_branch.value=e.branch; e_type.value=e.type;
+  e_rate.value=e.rate; e_coeff.value=e.coeff; e_fixed.value=e.fixed; e_active.checked=e.active;
+  const cs=document.getElementById("e_colors"); cs.innerHTML="";
+  PALETTE.forEach(c=>{const b=document.createElement("button");b.style.background="#"+c;
+    if(c===e.color)b.classList.add("sel");b.onclick=()=>{cs.querySelectorAll("button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");b.dataset.pick="1";cs.dataset.color=c;};
+    cs.appendChild(b);});
+  cs.dataset.color=e.color;
+  document.getElementById("empDlg").showModal();
+}
+document.getElementById("dlgCancel").onclick=()=>empDlg.close();
+document.getElementById("dlgSave").onclick=()=>{
+  const data={name:e_name.value.trim(),branch:e_branch.value,type:e_type.value,
+    rate:+e_rate.value||0,coeff:+e_coeff.value||0,fixed:+e_fixed.value||0,
+    active:e_active.checked,color:document.getElementById("e_colors").dataset.color};
+  if(!data.name){alert("צריך שם");return;}
+  if(editingId){Object.assign(db.employees.find(x=>x.id===editingId),data);}
+  else{data.id="emp"+Date.now();db.employees.push(data);}
+  save();syncEmployees();empDlg.close();renderEmployees();renderLegend();
+};
+document.getElementById("addEmp").onclick=()=>openEmpDlg(null);
+
+/* ---------- render: settings ---------- */
+function renderSettings(){
+  const s=db.settings;
+  document.getElementById("setTargets").innerHTML=`
+    ${numField("יעד עלות מעביד — נמוך","targetLow",s.targetLow,"₪ חודשי כולל שני הסניפים")}
+    ${numField("יעד עלות מעביד — גבוה","targetHigh",s.targetHigh,"מעבר לזה נדרשת פעולה")}
+    ${numField("מקדם שבת / חג","satMult",s.satMult,"1.5 = 150%",0.05)}`;
+  bindNum("targetLow");bindNum("targetHigh");bindNum("satMult");
+
+  const P=s.payroll;
+  document.getElementById("setPayroll").innerHTML=`
+    <div style="font-weight:700;margin-bottom:6px;font-size:13px">בוגרת</div>
+    ${pct("נטו מהברוטו","bogeret.net",P.bogeret.net*100)}
+    ${pct("ביטוח לאומי מעביד","bogeret.ni",P.bogeret.ni)}
+    ${pct("פנסיה מעביד","bogeret.pension",P.bogeret.pension)}
+    ${pct("פיצויים","bogeret.severance",P.bogeret.severance)}
+    <div style="font-weight:700;margin:10px 0 6px;font-size:13px">נוער</div>
+    ${pct("נטו מהברוטו","noar.net",P.noar.net*100)}
+    ${pct("ביטוח לאומי מעביד","noar.ni",P.noar.ni)}
+    ${pct("פנסיה מעביד","noar.pension",P.noar.pension)}
+    ${pct("פיצויים","noar.severance",P.noar.severance)}`;
+  document.querySelectorAll("[data-pay]").forEach(inp=>inp.oninput=()=>{
+    const [grp,fld]=inp.dataset.pay.split(".");let v=+inp.value||0;
+    if(fld==="net")v=v/100; db.settings.payroll[grp][fld]=v;save();syncSettings();
+  });
+  renderHolidays();
+}
+function numField(l,k,v,hint,step){return `<div class="field"><label>${l}</label>
+  <input class="inp" type="number" step="${step||100}" data-num="${k}" value="${v}"><span class="hint">${hint||""}</span></div>`}
+function bindNum(k){document.querySelector(`[data-num="${k}"]`).oninput=e=>{db.settings[k]=+e.target.value||0;save();syncSettings();};}
+function pct(l,k,v){return `<div class="field" style="margin-bottom:8px"><label>${l} (%)</label>
+  <input class="inp" type="number" step="0.05" data-pay="${k}" value="${Math.round(v*100)/100}"></div>`}
+function renderHolidays(){
+  const el=document.getElementById("holChips");
+  el.innerHTML=db.holidays.length?db.holidays.sort((a,b)=>a.date<b.date?-1:1).map(h=>
+    `<div class="chip">${fmtDate(h.date)} · ${h.name} <button data-delhol="${h.date}">×</button></div>`).join(""):
+    `<span style="color:var(--ink-soft);font-size:13px">לא הוגדרו חגים עדיין</span>`;
+  el.querySelectorAll("[data-delhol]").forEach(b=>b.onclick=()=>{
+    db.holidays=db.holidays.filter(h=>h.date!==b.dataset.delhol);save();syncHolidays();renderHolidays();});
+}
+document.getElementById("addHol").onclick=()=>{
+  const d=document.getElementById("holDate").value, n=document.getElementById("holName").value.trim()||"חג";
+  if(!d){alert("בחרו תאריך");return;}
+  if(!db.holidays.some(h=>h.date===d))db.holidays.push({date:d,name:n});
+  document.getElementById("holName").value="";save();syncHolidays();renderHolidays();
+};
+
+/* ---------- export / import ---------- */
+document.getElementById("exportJson").onclick=()=>{
+  dl("gayaland-hr-backup.json",JSON.stringify(db,null,2),"application/json");};
+document.getElementById("importJson").onclick=()=>document.getElementById("fileInput").click();
+document.getElementById("fileInput").onchange=ev=>{
+  const f=ev.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{db=JSON.parse(r.result);save();initMonth();renderAll();alert("שוחזר בהצלחה");}catch(e){alert("קובץ לא תקין");}};
+  r.readAsText(f);};
+document.getElementById("exportCsv").onclick=()=>{
+  const rows=db.months[curYM]||[];
+  const head=["תאריך","יום","סניף","משמרת","שעות","עובדת","מכפיל","ברוטו","עלות מעביד"];
+  const lines=[head.join(",")];
+  rows.forEach(s=>{const c=shiftCost(s);
+    lines.push([s.date,s.day,s.branch,s.shift,s.hours,s.emp||"",shiftMult(s),Math.round(c.gross),Math.round(c.cost)].join(","));});
+  dl(`gayaland-${curYM}.csv`,"\ufeff"+lines.join("\n"),"text/csv");};
+document.getElementById("resetAll").onclick=()=>{
+  if(confirm("לאפס את כל הנתונים לברירת המחדל? פעולה זו אינה הפיכה.")){
+    db=freshDb();save();initMonth();renderAll();}};
+function dl(name,content,type){
+  const b=new Blob([content],{type});const u=URL.createObjectURL(b);
+  const a=document.createElement("a");a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+
+/* ---------- helpers / nav ---------- */
+function labelYM(ym){const [y,m]=ym.split("-").map(Number);return `${HEB_MONTHS[m]} ${y}`;}
+function fmtDate(ds){const [y,m,d]=ds.split("-");return `${+d}/${+m}`;}
+function initMonth(){const l=ymList();if(!curYM||!l.includes(curYM))curYM=l[0];updateMonthLabel();}
+function updateMonthLabel(){document.getElementById("mLabel").textContent=labelYM(curYM);}
+document.getElementById("prevM").onclick=()=>{const l=ymList(),i=l.indexOf(curYM);if(i>0){curYM=l[i-1];updateMonthLabel();renderAll();}};
+document.getElementById("nextM").onclick=()=>{const l=ymList(),i=l.indexOf(curYM);if(i<l.length-1){curYM=l[i+1];updateMonthLabel();renderAll();}};
+
+let curView="schedule";
+document.getElementById("tabs").addEventListener("click",e=>{
+  const b=e.target.closest(".tab");if(!b)return;
+  curView=b.dataset.view;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t===b));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+curView));
+  document.getElementById("monthNav").style.visibility=(curView==="employees"||curView==="settings")?"hidden":"visible";
+  renderAll();
+});
+function renderAll(){
+  if(curView==="schedule")renderSchedule();
+  else if(curView==="dashboard")renderDashboard();
+  else if(curView==="employees")renderEmployees();
+  else if(curView==="settings")renderSettings();
+}
+// buildWorkbook(db, XLSX) -> workbook. Mirrors the app state into a full parametric Excel.
+// Assignments come from the app; rate/coeff via VLOOKUP to עובדות so wage edits stay live.
+function buildWorkbook(db, XLSX){
+  const HEB_MONTHS={1:"ינואר",2:"פברואר",3:"מרץ",4:"אפריל",5:"מאי",6:"יוני",7:"יולי",8:"אוגוסט",9:"ספטמבר",10:"אוקטובר",11:"נובמבר",12:"דצמבר"};
+  const monthName=ym=>{const[y,m]=ym.split("-").map(Number);return HEB_MONTHS[m]+" "+y;};
+  const isHol=d=>db.holidays.some(h=>h.date===d);
+  const empRow=name=>{const i=db.employees.findIndex(e=>e.name===name);return i<0?null:i+2;};
+  const multVal=s=>(s.shift==="שבת"||s.hol||isHol(s.date))?(db.settings.satMult||1.5):1;
+
+  const wb=XLSX.utils.book_new();
+  const border={top:{style:"thin",color:{rgb:"CCCCCC"}},bottom:{style:"thin",color:{rgb:"CCCCCC"}},left:{style:"thin",color:{rgb:"CCCCCC"}},right:{style:"thin",color:{rgb:"CCCCCC"}}};
+  const hd={font:{bold:true,color:{rgb:"FFFFFF"}},fill:{fgColor:{rgb:"7C8F4E"}},alignment:{horizontal:"center"},border};
+
+  // ---- הגדרות ----
+  const setAoa=[
+    ["פרמטר","ערך"],
+    ["יעד עלות מעביד — נמוך",db.settings.targetLow],
+    ["יעד עלות מעביד — גבוה",db.settings.targetHigh],
+    ["מקדם שבת/חג",db.settings.satMult]
+  ];
+  const wsSet=XLSX.utils.aoa_to_sheet(setAoa);
+  wsSet["!cols"]=[{wch:26},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,wsSet,"הגדרות");
+
+  // ---- עובדות ----
+  const empHead=["עובד/ת","סניף","סוג","שכר שעתי","מקדם מעביד","עלות קבועה","הערות","פעיל"];
+  const empAoa=[empHead].concat(db.employees.map(e=>[e.name,e.branch,e.type,e.rate,e.coeff,e.fixed,e.notes||"",e.active?"כן":"לא"]));
+  const wsEmp=XLSX.utils.aoa_to_sheet(empAoa);
+  wsEmp["!cols"]=[{wch:16},{wch:9},{wch:9},{wch:11},{wch:12},{wch:13},{wch:20},{wch:7}];
+  empHead.forEach((_,c)=>{const ref=XLSX.utils.encode_cell({r:0,c});if(wsEmp[ref])wsEmp[ref].s=hd;});
+  XLSX.utils.book_append_sheet(wb,wsEmp,"עובדות");
+
+  // ---- month sheets ----
+  const monthLast={};
+  const SHIFT_HEADERS=["תאריך","יום","סניף","משמרת","שעות","עובד/ת","מכפיל","שכר שעתי","מקדם","ברוטו","עלות מעביד","בקרה"];
+  for(const ym of Object.keys(db.months).sort()){
+    const rows=db.months[ym];
+    const aoa=[SHIFT_HEADERS];
+    rows.forEach(s=>aoa.push([s.date,s.day,s.branch,s.shift,s.hours,s.emp||"",multVal(s),null,null,null,null,null]));
+    const ws=XLSX.utils.aoa_to_sheet(aoa);
+    const n=rows.length; monthLast[ym]=n+1;
+    for(let i=0;i<n;i++){
+      const r=i+2; // 1-based excel row
+      const set=(col,f)=>{const ref=col+r;ws[ref]={t:"n",f};};
+      set("H",`IFERROR(VLOOKUP($F${r},עובדות!$A:$H,4,FALSE),0)`);
+      set("I",`IFERROR(VLOOKUP($F${r},עובדות!$A:$H,5,FALSE),0)`);
+      set("J",`$E${r}*$H${r}*$G${r}`);
+      set("K",`$J${r}*$I${r}`);
+      const refL="L"+r;
+      ws[refL]={t:"s",f:`IF($F${r}="","",IF(ISNA(VLOOKUP($F${r},עובדות!$A:$H,3,FALSE)),"⚠ לא מוגדרת",`+
+        `IF(AND(VLOOKUP($F${r},עובדות!$A:$H,3,FALSE)="נוער",$D${r}="שבת"),"⚠ נוער בשבת",`+
+        `IF(AND(VLOOKUP($F${r},עובדות!$A:$H,3,FALSE)="נוער",$E${r}>8),"⚠ מעל 8 ש׳ לנוער",`+
+        `IF(VLOOKUP($F${r},עובדות!$A:$H,8,FALSE)<>"כן","⚠ לא פעילה","")))))`};
+    }
+    // summary
+    const sr=n+3;
+    ws["A"+sr]={t:"s",v:"סיכום"};
+    ws["A"+(sr+1)]={t:"s",v:"משמרות"}; ws["B"+(sr+1)]={t:"n",f:`COUNTIF(F2:F${n+1},"<>")`};
+    ws["A"+(sr+2)]={t:"s",v:"שעות"};   ws["B"+(sr+2)]={t:"n",f:`SUMIFS(E2:E${n+1},F2:F${n+1},"<>")`};
+    ws["A"+(sr+3)]={t:"s",v:"עלות מעביד"}; ws["B"+(sr+3)]={t:"n",f:`SUM(K2:K${n+1})`};
+    ws["A"+(sr+4)]={t:"s",v:"התראות"}; ws["B"+(sr+4)]={t:"n",f:`COUNTIF(L2:L${n+1},"⚠*")`};
+    ws["!ref"]=`A1:L${sr+4}`;
+    ws["!cols"]=[{wch:11},{wch:8},{wch:8},{wch:8},{wch:6},{wch:15},{wch:7},{wch:10},{wch:8},{wch:11},{wch:12},{wch:20}];
+    SHIFT_HEADERS.forEach((_,c)=>{const ref=XLSX.utils.encode_cell({r:0,c});if(ws[ref])ws[ref].s=hd;});
+    XLSX.utils.book_append_sheet(wb,ws,monthName(ym));
+  }
+
+  // ---- דשבורד ----
+  const dHead=["חודש","עלות שעתית","קבועות","סה״כ","יעד נמוך","סטטוס","התראות"];
+  const daoa=[dHead];
+  const yms=Object.keys(db.months).sort();
+  yms.forEach(ym=>daoa.push([monthName(ym),null,null,null,null,null,null]));
+  const wsD=XLSX.utils.aoa_to_sheet(daoa);
+  yms.forEach((ym,i)=>{
+    const r=i+2, sn="'"+monthName(ym)+"'", last=monthLast[ym];
+    wsD["B"+r]={t:"n",f:`SUM(${sn}!K2:K${last})`};
+    wsD["C"+r]={t:"n",f:`SUMIFS(עובדות!$F:$F,עובדות!$H:$H,"כן")`}; // total fixed (both branches)
+    wsD["D"+r]={t:"n",f:`B${r}+C${r}`};
+    wsD["E"+r]={t:"n",f:`הגדרות!$B$2`};
+    wsD["F"+r]={t:"s",f:`IF(B${r}=0,"טרם שובץ",IF(D${r}<=הגדרות!$B$2,"בתוך היעד",IF(D${r}<=הגדרות!$B$3,"מעל היעד הנמוך","מעל היעד הגבוה")))`};
+    wsD["G"+r]={t:"n",f:`COUNTIF(${sn}!L2:L${last},"⚠*")`};
+  });
+  wsD["!ref"]=`A1:G${yms.length+1}`;
+  wsD["!cols"]=[{wch:16},{wch:13},{wch:12},{wch:12},{wch:12},{wch:18},{wch:10}];
+  dHead.forEach((_,c)=>{const ref=XLSX.utils.encode_cell({r:0,c});if(wsD[ref])wsD[ref].s=hd;});
+  XLSX.utils.book_append_sheet(wb,wsD,"דשבורד");
+
+  // RTL on all sheets
+  wb.SheetNames.forEach(nm=>{wb.Sheets[nm]["!sheetView"]=[{RTL:true}];wb.Sheets[nm].Views=[{RTL:true}];});
+  return wb;
+}
+
+document.getElementById("exportXlsx").onclick=()=>{
+  if(typeof XLSX==="undefined"){alert("ספריית האקסל לא נטענה — בדקו חיבור אינטרנט ונסו שוב.");return;}
+  try{
+    const wb=buildWorkbook(db,XLSX);
+    XLSX.writeFile(wb,"מערכת-כח-אדם-גאיהלנד.xlsx",{bookType:"xlsx"});
+  }catch(e){alert("שגיאה בייצוא: "+e.message);}
+};
+
+/* ============ Google Sheets two-way sync ============
+   Pattern: Google Identity Services (GIS) token client + Sheets API v4 (Bearer token),
+   mirroring the tasks/inventory tabs of the main dashboard.
+   The app self-creates the spreadsheet on first connect and auto-saves on every change. */
+
+const SYNC = {
+  clientId: localStorage.getItem("gayaland_hr_clientid") || "",
+  sheetId:  localStorage.getItem("gayaland_hr_sheetid")  || "",
+  auto:     localStorage.getItem("gayaland_hr_autosync") !== "0",
+  token:null, tokenExp:0, tokenClient:null, connected:false,
+  pending:{}, timer:null, pollTimer:null
+};
+const SCOPE = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file";
+const SET_KEYS = ["targetLow","targetHigh","satMult",
+  "net_bogeret","ni_bogeret","pension_bogeret","severance_bogeret",
+  "net_noar","ni_noar","pension_noar","severance_noar"];
+
+function syncStatus(msg,kind){
+  const el=document.getElementById("syncStatus"); if(!el)return;
+  el.textContent=msg;
+  el.className="sync-status "+(kind||"");
+}
+function orderedYM(){return Object.keys(db.months).sort();}
+
+/* ---- token ---- */
+function ensureToken(){
+  return new Promise((resolve,reject)=>{
+    if(SYNC.token && Date.now()<SYNC.tokenExp-60000) return resolve(SYNC.token);
+    if(!window.google||!google.accounts||!google.accounts.oauth2) return reject(new Error("GIS לא נטען"));
+    if(!SYNC.clientId) return reject(new Error("חסר Client ID"));
+    if(!SYNC.tokenClient){
+      SYNC.tokenClient=google.accounts.oauth2.initTokenClient({
+        client_id:SYNC.clientId, scope:SCOPE,
+        callback:(resp)=>{
+          if(resp.error){SYNC._rej&&SYNC._rej(new Error(resp.error));return;}
+          SYNC.token=resp.access_token;
+          SYNC.tokenExp=Date.now()+(resp.expires_in||3600)*1000;
+          SYNC._res&&SYNC._res(SYNC.token);
+        }
+      });
+    }
+    SYNC._res=resolve; SYNC._rej=reject;
+    SYNC.tokenClient.requestAccessToken({prompt: SYNC.token?"":"consent"});
+  });
+}
+async function api(method,url,body){
+  const t=await ensureToken();
+  const r=await fetch(url,{method,headers:{Authorization:"Bearer "+t,"Content-Type":"application/json"},
+    body:body?JSON.stringify(body):undefined});
+  if(!r.ok){const txt=await r.text();throw new Error(`${r.status}: ${txt.slice(0,160)}`);}
+  return r.status===204?null:r.json();
+}
+const SB="https://sheets.googleapis.com/v4/spreadsheets";
+const enc=s=>encodeURIComponent(s);
+
+/* ---- serialize app <-> sheet ---- */
+function empAoa(){
+  const head=["id","שם","סניף","סוג","שכר","מקדם","קבועה","הערות","פעיל","צבע"];
+  return [head].concat(db.employees.map(e=>[e.id,e.name,e.branch,e.type,e.rate,e.coeff,e.fixed,e.notes||"",e.active?"כן":"לא",e.color]));
+}
+function monthAoa(ym){
+  const head=["תאריך","יום","סניף","משמרת","שעות","עובד","חג"];
+  return [head].concat(db.months[ym].map(s=>[s.date,s.day,s.branch,s.shift,s.hours,s.emp||"", (s.hol||isHoliday(s.date))?"כן":""]));
+}
+function setAoa(){
+  const p=db.settings.payroll, s=db.settings;
+  const map={targetLow:s.targetLow,targetHigh:s.targetHigh,satMult:s.satMult,
+    net_bogeret:p.bogeret.net,ni_bogeret:p.bogeret.ni,pension_bogeret:p.bogeret.pension,severance_bogeret:p.bogeret.severance,
+    net_noar:p.noar.net,ni_noar:p.noar.ni,pension_noar:p.noar.pension,severance_noar:p.noar.severance};
+  const rows=[["מפתח","ערך"]].concat(SET_KEYS.map(k=>[k,map[k]]));
+  rows.push(["dayPatterns",JSON.stringify(db.dayPatterns||{})]);
+  return rows;
+}
+function holAoa(){return [["תאריך","שם"]].concat(db.holidays.map(h=>[h.date,h.name]));}
+
+/* ---- create spreadsheet on first connect ---- */
+async function createSpreadsheet(){
+  syncStatus("יוצר גיליון חדש…","busy");
+  const monthTabs=orderedYM().map(ym=>({properties:{title:labelYM(ym)}}));
+  const res=await api("POST",SB,{properties:{title:"מערכת ניהול כוח אדם — גאיהלנד"},
+    sheets:[{properties:{title:"עובדות"}},{properties:{title:"הגדרות"}},{properties:{title:"חגים"}},...monthTabs]});
+  SYNC.sheetId=res.spreadsheetId;
+  localStorage.setItem("gayaland_hr_sheetid",SYNC.sheetId);
+  await pushAll();
+  return res.spreadsheetId;
+}
+async function pushAll(){
+  const data=[
+    {range:"עובדות!A1",values:empAoa()},
+    {range:"הגדרות!A1",values:setAoa()},
+    {range:"חגים!A1",values:holAoa()},
+    ...orderedYM().map(ym=>({range:`'${labelYM(ym)}'!A1`,values:monthAoa(ym)}))
+  ];
+  await api("POST",`${SB}/${SYNC.sheetId}/values:batchUpdate`,
+    {valueInputOption:"RAW",data});
+}
+
+/* ---- pull everything from sheet into app ---- */
+async function pullAll(){
+  syncStatus("מושך מהגיליון…","busy");
+  const ranges=["עובדות!A2:J","הגדרות!A2:B","חגים!A2:B",...orderedYM().map(ym=>`'${labelYM(ym)}'!A2:G`)];
+  const q=ranges.map(r=>"ranges="+enc(r)).join("&");
+  const res=await api("GET",`${SB}/${SYNC.sheetId}/values:batchGet?${q}`);
+  const vr=res.valueRanges||[];
+  // employees
+  const eRows=(vr[0]&&vr[0].values)||[];
+  if(eRows.length){
+    db.employees=eRows.filter(r=>r[1]).map(r=>({id:r[0]||("emp"+Math.random().toString(36).slice(2)),
+      name:r[1],branch:r[2],type:r[3],rate:+r[4]||0,coeff:+r[5]||0,fixed:+r[6]||0,
+      notes:r[7]||"",active:(r[8]||"כן")==="כן",color:r[9]||"DDDDDD"}));
+  }
+  // settings
+  const sRows=(vr[1]&&vr[1].values)||[]; const sm={};
+  sRows.forEach(r=>{if(r[0])sm[r[0]]=r[1];});
+  if(Object.keys(sm).length){
+    const S=db.settings; const num=(v,d)=>v==null||v===""?d:(+v);
+    if(sm.targetLow!=null)S.targetLow=num(sm.targetLow,S.targetLow);
+    if(sm.targetHigh!=null)S.targetHigh=num(sm.targetHigh,S.targetHigh);
+    if(sm.satMult!=null)S.satMult=num(sm.satMult,S.satMult);
+    S.payroll.bogeret={net:num(sm.net_bogeret,.85),ni:num(sm.ni_bogeret,3.55),pension:num(sm.pension_bogeret,6.5),severance:num(sm.severance_bogeret,8.33)};
+    S.payroll.noar={net:num(sm.net_noar,.92),ni:num(sm.ni_noar,.5),pension:num(sm.pension_noar,0),severance:num(sm.severance_noar,0)};
+    if(sm.dayPatterns){try{db.dayPatterns=JSON.parse(sm.dayPatterns);}catch(e){}}
+  }
+  // Only apply holidays + shift assignments if the response actually carried data
+  // (guards against an empty/failed pull wiping local data).
+  const hrHasData = eRows.length>0 || Object.keys(sm).length>0;
+  if(hrHasData){
+    const hRows=(vr[2]&&vr[2].values)||[];
+    db.holidays=hRows.filter(r=>r[0]).map(r=>({date:r[0],name:r[1]||"חג"}));
+    orderedYM().forEach((ym,i)=>{
+      const rows=(vr[3+i]&&vr[3+i].values)||[];
+      rows.forEach((r,idx)=>{ if(db.months[ym][idx]){ db.months[ym][idx].emp=r[5]||""; } });
+    });
+  }
+  save();
+  syncStatus("מסונכרן ✓","ok");
+}
+
+/* ---- push single cell (shift assignment) ---- */
+function colLetter(n){let s="";while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-m-1)/26;}return s;}
+async function pushCell(ym,idx){
+  const row=idx+2; // +1 header, +1 to 1-based
+  const range=`'${labelYM(ym)}'!F${row}`;
+  const val=db.months[ym][idx].emp||"";
+  await api("PUT",`${SB}/${SYNC.sheetId}/values/${enc(range)}?valueInputOption=RAW`,{values:[[val]]});
+}
+async function pushTab(kind){
+  let range,values;
+  if(kind==="emp"){range="עובדות!A1";values=empAoa();}
+  else if(kind==="set"){range="הגדרות!A1";values=setAoa();}
+  else if(kind==="hol"){range="חגים!A1";values=holAoa();}
+  else return;
+  // clear then write (so deletions propagate)
+  await api("POST",`${SB}/${SYNC.sheetId}/values/${enc(range.split("!")[0]+"!A:Z")}:clear`);
+  await api("PUT",`${SB}/${SYNC.sheetId}/values/${enc(range)}?valueInputOption=RAW`,{values});
+}
+
+/* ---- debounced dispatcher ---- */
+function scheduleSync(op){
+  if(!SYNC.connected||!SYNC.auto)return;
+  SYNC.pending[op.key]=op;
+  clearTimeout(SYNC.timer);
+  SYNC.timer=setTimeout(flushSync,700);
+}
+async function flushSync(){
+  const ops=Object.values(SYNC.pending); SYNC.pending={};
+  if(!ops.length)return;
+  syncStatus("שומר…","busy");
+  try{
+    for(const op of ops){
+      if(op.type==="cell")await pushCell(op.ym,op.idx);
+      else if(op.type==="tab")await pushTab(op.kind);
+    }
+    syncStatus("נשמר בגיליון ✓","ok");
+  }catch(e){ syncStatus("שגיאת שמירה: "+e.message,"err"); }
+}
+// public hooks used by the app
+function syncShift(ym,idx){ scheduleSync({key:"cell:"+ym+":"+idx,type:"cell",ym,idx}); }
+function syncEmployees(){ scheduleSync({key:"tab:emp",type:"tab",kind:"emp"}); }
+function syncSettings(){ scheduleSync({key:"tab:set",type:"tab",kind:"set"}); }
+function syncHolidays(){ scheduleSync({key:"tab:hol",type:"tab",kind:"hol"}); }
+
+/* ---- connect flow ---- */
+async function connectSheets(){
+  if(!SYNC.clientId){syncStatus("הזינו Client ID תחילה","err");return;}
+  try{
+    syncStatus("מתחבר…","busy");
+    await ensureToken();
+    if(!SYNC.sheetId){ await createSpreadsheet(); }
+    else { await pullAll(); }
+    SYNC.connected=true;
+    updateSyncUI();
+    syncStatus("מחובר ומסונכרן ✓","ok");
+    startPolling();
+  }catch(e){ syncStatus("שגיאה: "+e.message,"err"); }
+}
+function disconnectSheets(){
+  SYNC.connected=false; SYNC.token=null; stopPolling(); updateSyncUI(); syncStatus("מנותק","");
+}
+function startPolling(){
+  stopPolling();
+  SYNC.pollTimer=setInterval(async()=>{
+    if(!SYNC.connected||document.hidden)return;
+    try{ await pullAll(); renderAll(); }catch(e){}
+  },20000);
+}
+function stopPolling(){ if(SYNC.pollTimer)clearInterval(SYNC.pollTimer); SYNC.pollTimer=null; }
+
+function updateSyncUI(){
+  const badge=document.getElementById("syncBadge");
+  if(badge){ badge.textContent=SYNC.connected?"Google Sheets מחובר":"לא מחובר";
+    badge.className="sync-badge "+(SYNC.connected?"on":""); }
+  const link=document.getElementById("sheetLink");
+  if(link){ if(SYNC.sheetId){link.style.display="inline";link.href="https://docs.google.com/spreadsheets/d/"+SYNC.sheetId;}
+    else link.style.display="none"; }
+  const cb=document.getElementById("connectBtn"), db_=document.getElementById("disconnectBtn");
+  if(cb)cb.style.display=SYNC.connected?"none":"inline-block";
+  if(db_)db_.style.display=SYNC.connected?"inline-block":"none";
+}
+
+
+/* ---- wire sync UI ---- */
+(function(){
+  const ci=document.getElementById("clientIdInput"); if(ci)ci.value=SYNC.clientId;
+  const chk=document.getElementById("autoSyncChk"); if(chk)chk.checked=SYNC.auto;
+  if(ci)ci.oninput=()=>{SYNC.clientId=ci.value.trim();localStorage.setItem("gayaland_hr_clientid",SYNC.clientId);};
+  if(chk)chk.onchange=()=>{SYNC.auto=chk.checked;localStorage.setItem("gayaland_hr_autosync",chk.checked?"1":"0");};
+  const cb=document.getElementById("connectBtn"); if(cb)cb.onclick=connectSheets;
+  const dc=document.getElementById("disconnectBtn"); if(dc)dc.onclick=disconnectSheets;
+  const pb=document.getElementById("pullBtn"); if(pb)pb.onclick=async()=>{try{await pullAll();renderAll();}catch(e){syncStatus("שגיאה: "+e.message,"err");}};
+  updateSyncUI();
+})();
+
+
+/* ═══════════════════ Google login gate (זהה לדשבורד) ═══════════════════ */
+const GL_CLIENT_ID = "557727441348-e2318vpsrocn3s408jo4ar5b2c76d7la.apps.googleusercontent.com";
+const GL_SCOPES = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/spreadsheets";
+const GL_TOKEN_KEY = "gl_sync_token_v2";
+const GL_ALLOWED = {
+  'oasasson@gmail.com':  { name: 'אור',     role: 'אדמין' },
+  'info@gayaland.co.il': { name: 'גאיהלנד', role: 'אדמין' }
+};
+let glToken=null, glRefreshTimer=null, currentUser=null;
+
+function glSaveToken(tok,expiresInSec,email){
+  try{localStorage.setItem(GL_TOKEN_KEY,JSON.stringify({t:tok,exp:Date.now()+((expiresInSec||3600)-60)*1000,email:email||''}));}catch(e){}
+  glScheduleRefresh();
+}
+function glRestoreToken(){
+  try{
+    const raw=localStorage.getItem(GL_TOKEN_KEY);if(!raw)return false;
+    const o=JSON.parse(raw);
+    if(!o.t||Date.now()>o.exp){localStorage.removeItem(GL_TOKEN_KEY);return false;}
+    if(o.email&&!GL_ALLOWED[o.email.toLowerCase()]){localStorage.removeItem(GL_TOKEN_KEY);return false;}
+    glToken=o.t; if(o.email)currentUser={email:o.email,...(GL_ALLOWED[o.email.toLowerCase()]||{})};
+    glScheduleRefresh(); return true;
+  }catch(e){return false;}
+}
+function glScheduleRefresh(){
+  try{
+    const raw=localStorage.getItem(GL_TOKEN_KEY);if(!raw)return;
+    const o=JSON.parse(raw);
+    const ms=Math.max(o.exp-Date.now()-5*60*1000,30*1000);
+    clearTimeout(glRefreshTimer); glRefreshTimer=setTimeout(glSilentRefresh,ms);
+  }catch(e){}
+}
+function glSilentRefresh(){
+  if(!window.google||!google.accounts||!google.accounts.oauth2)return;
+  try{
+    const c=google.accounts.oauth2.initTokenClient({client_id:GL_CLIENT_ID,scope:GL_SCOPES,prompt:'',callback:(resp)=>{
+      if(resp.error)return; glToken=resp.access_token; glBridgeToken(resp.access_token,resp.expires_in);
+      const raw=localStorage.getItem(GL_TOKEN_KEY); let email=''; try{email=JSON.parse(raw).email;}catch(e){}
+      glSaveToken(resp.access_token,resp.expires_in,email);
+    }});
+    c.requestAccessToken();
+  }catch(e){}
+}
+// bridge the gate token into the sync module so no separate Client ID entry is needed
+function glBridgeToken(tok,expiresInSec){
+  SYNC.clientId=GL_CLIENT_ID; localStorage.setItem("gayaland_hr_clientid",GL_CLIENT_ID);
+  SYNC.token=tok; SYNC.tokenExp=Date.now()+((expiresInSec||3600))*1000;
+}
+async function doLogin(){
+  const errEl=document.getElementById('login-error');
+  const loadEl=document.getElementById('login-loading');
+  errEl.textContent='';
+  if(!window.google||!google.accounts||!google.accounts.oauth2){errEl.textContent='Google עדיין נטען — נסה שוב בעוד רגע';return;}
+  loadEl.style.display='block';
+  try{
+    const resp=await new Promise((resolve,reject)=>{
+      const cl=google.accounts.oauth2.initTokenClient({client_id:GL_CLIENT_ID,scope:GL_SCOPES,prompt:'select_account',callback:(r)=>{r.error?reject(new Error(r.error)):resolve(r);}});
+      cl.requestAccessToken();
+    });
+    glToken=resp.access_token;
+    const u=await (await fetch('https://www.googleapis.com/oauth2/v3/userinfo',{headers:{Authorization:'Bearer '+glToken}})).json();
+    const email=(u.email||'').toLowerCase();
+    glSaveToken(glToken,resp.expires_in,email);
+    const allowed=GL_ALLOWED[email];
+    loadEl.style.display='none';
+    if(!allowed){
+      errEl.textContent='אין הרשאה לחשבון '+email;
+      glToken=null;try{localStorage.removeItem(GL_TOKEN_KEY);}catch(e){}
+      return;
+    }
+    currentUser={name:allowed.name,role:allowed.role,email};
+    glBridgeToken(resp.access_token,resp.expires_in);
+    document.getElementById('login-overlay').style.display='none';
+    // auto-connect the sheet sync using the gate token
+    try{ await connectSheets(); }catch(e){}
+  }catch(e){
+    loadEl.style.display='none';
+    errEl.textContent='ההתחברות נכשלה — נסה שוב';
+  }
+}
+// on load: gate the app
+(function glInitGate(){
+  const show=()=>{const ov=document.getElementById('login-overlay');if(ov)ov.style.display='flex';};
+  const hide=()=>{const ov=document.getElementById('login-overlay');if(ov)ov.style.display='none';};
+  if(glRestoreToken()){
+    glBridgeToken(glToken, 3600);
+    hide();
+    // try to connect sync silently
+    setTimeout(()=>{ try{ connectSheets(); }catch(e){} },300);
+  } else {
+    show();
+  }
+})();
+
+
+load();initMonth();renderAll();
+</script>
+</body>
+</html>
